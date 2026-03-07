@@ -313,6 +313,9 @@ export default function SimulatorPage({
                             <div className="flex flex-col items-end gap-2">
                                 <span className="rounded-full border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200">
                                     {doseG}g → {result.beverageG}g ({fmtRatio(ratio)})
+                                    <p className="mt-1 text-xs text-neutral-400">
+                                        {locale === "es" ? "Tiempo estimado" : "Estimated time"}: {result.estimatedTimeS}s
+                                    </p>
                                 </span>
 
                                 <button

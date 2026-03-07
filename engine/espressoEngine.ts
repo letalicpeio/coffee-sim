@@ -23,6 +23,7 @@ export type FlavorAxes = {
 
 export type EspressoResult = {
   extraction: number; // 0..100
+  estimatedTimeS: number;
   state: "Subextraído" | "Balanceado" | "Sobreextraído";
   styleHint: "Ristretto" | "Espresso" | "Lungo";
   beverageG: number; // doseG * ratio
@@ -39,21 +40,162 @@ function bell(x: number, center: number, width: number) {
   return Math.exp(-(z * z));
 }
 
+function computeExtraction(grind: number, ratio: number) {
+  const grindN = grind / 100;
+  const ratioN = (ratio - 1.0) / (3.2 - 1.0);
+
+  const grindContribution = grindN * 55;
+  const ratioContribution = ratioN * 35;
+  const interactionContribution = grindN * ratioN * 20;
+
+  let extraction =
+    12 +
+    grindContribution +
+    ratioContribution +
+    interactionContribution;
+
+  return clamp(extraction);
+}
+
+function computeShotTime(grind: number, ratio: number, roast: Roast) {
+  const grindN = grind / 100;
+  const ratioN = (ratio - 1.0) / (3.2 - 1.0);
+
+  // Base orientativa de espresso
+  const baseTime = 18;
+
+  // Más fino = más resistencia = más tiempo
+  const grindContribution = grindN * 14;
+
+  // Más ratio = más bebida = algo más de tiempo
+  const ratioContribution = ratioN * 8;
+
+  let roastTimeBias = 0;
+
+  if (roast === "claro") {
+    roastTimeBias = 2;
+  } else if (roast === "oscuro") {
+    roastTimeBias = -2;
+  }
+
+  const estimatedTimeS =
+    baseTime + grindContribution + ratioContribution + roastTimeBias;
+
+  return Math.round(estimatedTimeS);
+}
+
+function getTimeExtractionAdjustment(timeS: number) {
+  if (timeS < 22) return -6;
+  if (timeS < 26) return -3;
+  if (timeS <= 32) return 0;
+  if (timeS <= 36) return 3;
+  return 6;
+}
+
+function getExtractionState(
+  extraction: number,
+  roast: Roast
+): EspressoResult["state"] {
+  let low = 40;
+  let high = 68;
+
+  if (roast === "claro") {
+    high = 72;
+  } else if (roast === "oscuro") {
+    high = 64;
+  }
+
+  if (extraction < low) return "Subextraído";
+  if (extraction > high) return "Sobreextraído";
+  return "Balanceado";
+}
+function computeSensoryProfile(
+  extraction: number,
+  ratio: number,
+  roast: Roast,
+  process: Process
+): FlavorAxes {
+  const ratioN = (ratio - 1.0) / (3.2 - 1.0);
+
+  let acidityBias = 0;
+  let bitternessBias = 0;
+  let bodyBias = 0;
+  let astringencyBias = 0;
+  let sweetnessBias = 0;
+
+  if (roast === "claro") {
+    acidityBias += 8;
+    sweetnessBias -= 2;
+    astringencyBias += 2;
+  } else if (roast === "medio") {
+    sweetnessBias += 4;
+    bodyBias += 2;
+  } else if (roast === "oscuro") {
+    bitternessBias += 10;
+    bodyBias += 6;
+    acidityBias -= 6;
+    astringencyBias += 6;
+  }
+
+  if (process === "natural") {
+    sweetnessBias += 6;
+    acidityBias += 2;
+    astringencyBias -= 2;
+  } else if (process === "honey") {
+    sweetnessBias += 4;
+    bodyBias += 2;
+  } else if (process === "lavado") {
+    acidityBias += 4;
+    astringencyBias += 2;
+  }
+
+  const E = extraction;
+
+  const acidity = clamp(75 - E * 0.8 + acidityBias);
+  const bitterness = clamp((E - 50) * 1.1 + 25 + bitternessBias);
+  const astringency = clamp((E - 55) * 1.15 + 18 + astringencyBias);
+
+  const sweetnessBase = 15 + 70 * bell(E, 52, 18);
+
+  // ratio corto suele percibirse más intenso pero menos abierto;
+  // ratio más largo puede dar más claridad, pero si te pasas pierde dulzor
+  let ratioSweetnessBias = 0;
+  
+  if (ratio < 1.7) {
+    ratioSweetnessBias = -4;
+  } else if (ratio <= 2.4) {
+    ratioSweetnessBias = 4;
+  } else if (ratio <= 2.8) {
+    ratioSweetnessBias = 1;
+  } else {
+    ratioSweetnessBias = -5;
+  }
+  
+  const sweetness = clamp(
+    sweetnessBase + sweetnessBias + ratioSweetnessBias
+  );
+
+  const ristrettoBoost = (1 - ratioN) * 14;
+  const body = clamp(25 + E * 0.55 + ristrettoBoost + bodyBias);
+
+  return {
+    acidez: Math.round(acidity),
+    dulzor: Math.round(sweetness),
+    amargor: Math.round(bitterness),
+    astringencia: Math.round(astringency),
+    cuerpo: Math.round(body),
+  };
+}
+
 export function simulateEspresso(input: EspressoInputs): EspressoResult {
   const grind = clamp(input.grind, 0, 100);
   const ratio = Math.max(1.0, Math.min(3.2, input.ratio));
   const doseG = Math.max(1, input.doseG);
 
-  // Normalizaciones
-  // grindN: 0 grueso -> 1 fino
-  const grindN = grind / 100;
-  // ratioN: 1.0..3.2 -> 0..1
-  const ratioN = (ratio - 1.0) / (3.2 - 1.0);
-
-  // ----- Capa 1: extracción estimada (heurística MVP)
-  // Molienda aporta más que ratio (ajustable)
-  let extraction = 15 + grindN * 55 + ratioN * 35; // ~15..105
-  extraction = clamp(extraction);
+  const baseExtraction = computeExtraction(grind, ratio);
+  const estimatedTimeS = computeShotTime(grind, ratio, input.roast);
+  const timeAdjustment = getTimeExtractionAdjustment(estimatedTimeS);
+  const extraction = clamp(baseExtraction + timeAdjustment);
 
   // ----- Capa 3: moduladores por café (tueste / proceso)
   // Estos moduladores no “cambian física”, cambian percepción / tolerancias
@@ -80,45 +222,11 @@ export function simulateEspresso(input: EspressoInputs): EspressoResult {
     astringencyBias += 6;
   }
 
-  // Proceso
-  if (input.process === "natural") {
-    sweetnessBias += 6;
-    acidityBias += 2;
-    astringencyBias -= 2;
-  } else if (input.process === "honey") {
-    sweetnessBias += 4;
-    bodyBias += 2;
-  } else if (input.process === "lavado") {
-    acidityBias += 4;
-    // más “claridad”, puede percibirse más seco si te pasas
-    astringencyBias += 2;
-  }
-
-  // ----- Capa 2: traducción sensorial
-  // Usamos la extracción como eje principal:
-  // - acidez: alta cuando extracción es baja
-  // - amargor/astringencia: suben cuando extracción es alta
-  // - dulzor: campana con pico en zona media
-  // - cuerpo: sube con extracción y también con ratio corto (ristretto) suele percibirse más “denso”
   const E = extraction;
+  const axes = computeSensoryProfile(E, ratio, input.roast, input.process);
 
-  const acidity = clamp(75 - E * 0.8 + acidityBias);
-  const bitterness = clamp((E - 50) * 1.1 + 25 + bitternessBias);
-  const astringency = clamp((E - 55) * 1.15 + 18 + astringencyBias);
+  const state = getExtractionState(E, input.roast);
 
-  // Dulzor: pico alrededor de 52, anchura 18
-  const sweetnessBase = 15 + 70 * bell(E, 52, 18);
-  const sweetness = clamp(sweetnessBase + sweetnessBias);
-
-  // Cuerpo: sube con extracción y con ratio bajo (ristretto)
-  const ristrettoBoost = (1 - ratioN) * 14; // más boost cuanto más corto
-  const body = clamp(25 + E * 0.55 + ristrettoBoost + bodyBias);
-
-  // Estado sub/balance/sobre (umbrales MVP)
-  const state: EspressoResult["state"] =
-    E < 40 ? "Subextraído" : E > 68 ? "Sobreextraído" : "Balanceado";
-
-  // Etiqueta estilo por ratio (solo informativa)
   const styleHint: EspressoResult["styleHint"] =
     ratio < 1.8 ? "Ristretto" : ratio > 2.5 ? "Lungo" : "Espresso";
 
@@ -126,15 +234,10 @@ export function simulateEspresso(input: EspressoInputs): EspressoResult {
 
   return {
     extraction: E,
+    estimatedTimeS,
     state,
     styleHint,
     beverageG,
-    axes: {
-      acidez: Math.round(acidity),
-      dulzor: Math.round(sweetness),
-      amargor: Math.round(bitterness),
-      astringencia: Math.round(astringency),
-      cuerpo: Math.round(body),
-    },
+    axes,
   };
 }
