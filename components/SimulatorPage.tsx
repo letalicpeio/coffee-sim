@@ -29,6 +29,14 @@ export default function SimulatorPage({
     const [recipeName, setRecipeName] = useState("");
     const [copied, setCopied] = useState(false);
     const doseG = 18;
+    const [advancedMode, setAdvancedMode] = useState(false);
+    const [useTemperature, setUseTemperature] = useState(false);
+    const [usePressure, setUsePressure] = useState(false);
+    const [useWater, setUseWater] = useState(false);
+    const [temperature, setTemperature] = useState(93);
+    const [pressure, setPressure] = useState(9);
+    const [waterGH, setWaterGH] = useState(6);
+    const [waterKH, setWaterKH] = useState(3);
 
     // Leer URL al cargar / cuando cambia la query
     useEffect(() => {
@@ -145,6 +153,15 @@ export default function SimulatorPage({
                     {/* Controles */}
                     <div className="rounded-2xl border border-neutral-600 bg-neutral-900/40 p-6">
                         <h2 className="text-lg font-semibold">{dict.controls}</h2>
+                        <button
+                            type="button"
+                            onClick={() => setAdvancedMode(!advancedMode)}
+                            className="mt-3 rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
+                        >
+                            {advancedMode
+                                ? (locale === "es" ? "Ocultar modo avanzado" : "Hide advanced mode")
+                                : (locale === "es" ? "Modo avanzado" : "Advanced mode")}
+                        </button>
                         <p className="mt-1 text-sm text-neutral-400">
                             Ajusta la receta y el tipo de café. El resultado se actualiza en tiempo real.
                         </p>
@@ -190,6 +207,102 @@ export default function SimulatorPage({
                                     <span>largo</span>
                                 </div>
                             </div>
+                            {advancedMode && useTemperature && (
+                                <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm font-medium">
+                                            {locale === "es" ? "Temperatura" : "Temperature"}
+                                        </span>
+                                        <span className="text-xs text-neutral-400">{temperature}°C</span>
+                                    </div>
+
+                                    <input
+                                        className="mt-3 w-full accent-neutral-200"
+                                        type="range"
+                                        min={88}
+                                        max={98}
+                                        step={1}
+                                        value={temperature}
+                                        onChange={(e) => setTemperature(Number(e.target.value))}
+                                    />
+
+                                    <div className="mt-2 flex justify-between text-[11px] text-neutral-500">
+                                        <span>88°C</span>
+                                        <span>98°C</span>
+                                    </div>
+                                </div>
+                            )}
+                            {advancedMode && usePressure && (
+                                <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm font-medium">
+                                            {locale === "es" ? "Presión" : "Pressure"}
+                                        </span>
+                                        <span className="text-xs text-neutral-400">{pressure} bar</span>
+                                    </div>
+
+                                    <input
+                                        className="mt-3 w-full accent-neutral-200"
+                                        type="range"
+                                        min={6}
+                                        max={10}
+                                        step={0.5}
+                                        value={pressure}
+                                        onChange={(e) => setPressure(Number(e.target.value))}
+                                    />
+
+                                    <div className="mt-2 flex justify-between text-[11px] text-neutral-500">
+                                        <span>6 bar</span>
+                                        <span>10 bar</span>
+                                    </div>
+                                </div>
+                            )}
+                            {advancedMode && useWater && (
+                                <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm font-medium">
+                                            {locale === "es" ? "Agua" : "Water"}
+                                        </span>
+                                        <span className="text-xs text-neutral-400">
+                                            GH {waterGH} · KH {waterKH}
+                                        </span>
+                                    </div>
+
+                                    <div className="mt-4">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs text-neutral-400">GH</span>
+                                            <span className="text-xs text-neutral-400">{waterGH}</span>
+                                        </div>
+
+                                        <input
+                                            className="mt-2 w-full accent-neutral-200"
+                                            type="range"
+                                            min={1}
+                                            max={12}
+                                            step={1}
+                                            value={waterGH}
+                                            onChange={(e) => setWaterGH(Number(e.target.value))}
+                                        />
+                                    </div>
+
+                                    <div className="mt-4">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs text-neutral-400">KH</span>
+                                            <span className="text-xs text-neutral-400">{waterKH}</span>
+                                        </div>
+
+                                        <input
+                                            className="mt-2 w-full accent-neutral-200"
+                                            type="range"
+                                            min={0}
+                                            max={8}
+                                            step={1}
+                                            value={waterKH}
+                                            onChange={(e) => setWaterKH(Number(e.target.value))}
+                                        />
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Tipo de café */}
                             <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
@@ -277,6 +390,40 @@ export default function SimulatorPage({
                                     </button>
                                 </div>
                             </div>
+                            {advancedMode && (
+                                <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4 mt-4">
+                                    <p className="text-xs text-neutral-400 mb-3">
+                                        {locale === "es" ? "Parámetros avanzados" : "Advanced parameters"}
+                                    </p>
+
+                                    <div className="flex flex-wrap gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setUseTemperature(!useTemperature)}
+                                            className="px-3 py-1.5 text-xs border border-neutral-700 rounded-lg bg-neutral-900 hover:bg-neutral-800"
+                                        >
+                                            {locale === "es" ? "Añadir temperatura" : "Add temperature"}
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setUsePressure(!usePressure)}
+                                            className="px-3 py-1.5 text-xs border border-neutral-700 rounded-lg bg-neutral-900 hover:bg-neutral-800"
+                                        >
+                                            {locale === "es" ? "Añadir presión" : "Add pressure"}
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setUseWater(!useWater)}
+                                            className="px-3 py-1.5 text-xs border border-neutral-700 rounded-lg bg-neutral-900 hover:bg-neutral-800"
+                                        >
+                                            {locale === "es" ? "Añadir agua" : "Add water"}
+                                        </button>
+
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
