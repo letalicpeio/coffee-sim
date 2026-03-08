@@ -317,23 +317,25 @@ export default function SimulatorPage({
                                 </div>
                             </div>
 
-                            <div className="mt-6 h-60 space-y-4 lg:h-96 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
+                            <div className="mt-6 space-y-0 lg:h-96 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
                                 <ExtractionMap
                                     grind={grind}
                                     ratio={ratio}
                                     state={result.state}
                                     styleHint={result.styleHint}
                                 />
+
                                 <FlavorRadar axes={result.axes} />
                             </div>
-                            <p className="mt-4 text-xs text-neutral-400">
+
+                            <p className="mt-0 text-[11px] text-neutral-400 lg:mt-4 lg:text-xs">
                                 {result.state === "Subextraído" && dict.state_sub}
                                 {result.state === "Balanceado" && dict.state_bal}
                                 {result.state === "Sobreextraído" && dict.state_over}
                             </p>
                         </div>
 
-                        <p className="mt-6 text-xs text-neutral-500">{dict.note}</p>
+
                     </div>
                     {/* Controles */}
                     <div className="rounded-2xl border border-neutral-600 bg-neutral-900/40 p-6">
@@ -529,6 +531,7 @@ export default function SimulatorPage({
                                 <p className="mt-3 text-xs text-neutral-500">
                                     Consejo: tuestes claros suelen castigar más la subextracción; tuestes oscuros suben el amargor antes.
                                 </p>
+
                             </div>
 
                             {/* Presets rápidos */}
@@ -575,6 +578,7 @@ export default function SimulatorPage({
                                     </button>
                                 </div>
                             </div>
+                            <p className="mt-6 text-xs text-neutral-500">{dict.note}</p>
                             {advancedMode && (
                                 <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4 mt-4">
                                     <p className="text-xs text-neutral-400 mb-3">
