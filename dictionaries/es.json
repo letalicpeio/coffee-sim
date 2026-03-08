@@ -1,10 +1,11 @@
 {
-    "title": "Mira cómo cambia el sabor.",
+    "title": "Mira cómo cambia el sabor del café.",
     "title2": "Mueve la molienda y el ratio.",
-    "title3": "Modo Avanzado para temperatura, presión y agua",
+    "title3": "Modo Avanzado para temperatura, presión y agua.",
     "subtitle": "Predicción orientativa basada en teoría de extracción. Ideal para entender si tu receta tenderá a más acidez, más amargor o más cuerpo.",
     "tryNow": "Probar ahora",
     "controls": "Controles",
+    "adjust": "Ajusta la receta y el tipo de café. El resultado se actualiza en tiempo real.",
     "result": "Resultado",
     "quickPresets": "Presets rápidos",
     "copyLink": "Copiar enlace",

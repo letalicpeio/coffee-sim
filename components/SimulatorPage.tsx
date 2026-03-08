@@ -174,7 +174,7 @@ export default function SimulatorPage({
         <main className="min-h-screen bg-neutral-950 text-neutral-50">
             {/* Hero */}
             <section className="mx-auto max-w-screen-2xl px-6 pt-16 pb-10">
-                <div className="max-w-3xl">
+                <div className="max-w-8xl">
                     <p className="text-sm text-neutral-400">
                         {locale === "es"
                             ? "Simulador (MVP) · Espresso · Perfil sensorial"
@@ -184,14 +184,16 @@ export default function SimulatorPage({
                     <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
                         {recipeName ? (
                             <>
-                                {recipeName}
+                                <span className="block">{recipeName}</span>
                                 <span className="block text-neutral-300 text-base sm:text-lg mt-3">
                                     {locale === "es" ? "Simulación de espresso" : "Espresso simulation"}
                                 </span>
                             </>
                         ) : (
                             <>
-                                {dict.title} <span className="text-neutral-300">{dict.title2}{dict.title3}</span>
+                                <span className="block">{dict.title}</span>
+                                <span className="block text-neutral-300">{dict.title2}</span>
+                                <span className="block text-neutral-300">{dict.title3}</span>
                             </>
                         )}
                     </h1>
@@ -199,33 +201,33 @@ export default function SimulatorPage({
                     <p className="mt-4 text-base text-neutral-300 sm:text-lg">
                         {dict.subtitle}
                     </p>
-                    <div className="grid gap-6 lg:grid-cols-2">
-                    <div className="mt-6 flex flex-wrap gap-2">
-                        {["Espresso", "Molienda", "Ratio", "Tueste", "Proceso"].map((t) => (
-                            <span
-                                key={t}
-                                className="rounded-full border border-neutral-800 bg-neutral-900/40 px-3 py-1 text-xs text-neutral-200"
-                            >
-                                {t}
-                            </span>
-                        ))}
-                    </div>
+                    <div className="mt-0 flex flex-wrap items-center gap-3">
+                        <div className="mt-6 flex flex-wrap gap-2">
+                            {["Espresso", "Molienda", "Ratio", "Tueste", "Proceso"].map((t) => (
+                                <span
+                                    key={t}
+                                    className="rounded-full border border-neutral-800 bg-neutral-900/40 px-3 py-1 text-xs text-neutral-200"
+                                >
+                                    {t}
+                                </span>
+                            ))}
+                        </div>
 
-                    <div className="mt-6 flex items-center gap-2 text-xs">
-                        <span className="text-neutral-500">Language / Idioma:</span>
-                        {/* botón cambiar de idioma */}
-                        <button
-                            type="button"
-                            onClick={() => {
-                                const targetLocale = locale === "es" ? "en" : "es";
-                                const qs = searchParams.toString();
-                                router.push(`/${targetLocale}${qs ? `?${qs}` : ""}`);
-                            }}
-                            className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-neutral-200 hover:bg-neutral-900"
-                        >
-                            {locale === "es" ? dict.lang_en : dict.lang_es}
-                        </button>
-                    </div>
+                        <div className="mt-6 flex items-center gap-2 text-xs">
+                            <span className="text-neutral-500">Language / Idioma:</span>
+                            {/* botón cambiar de idioma */}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const targetLocale = locale === "es" ? "en" : "es";
+                                    const qs = searchParams.toString();
+                                    router.push(`/${targetLocale}${qs ? `?${qs}` : ""}`);
+                                }}
+                                className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-neutral-200 hover:bg-neutral-900"
+                            >
+                                {locale === "es" ? dict.lang_en : dict.lang_es}
+                            </button>
+                        </div>
                     </div>
 
                     <a
@@ -375,6 +377,7 @@ export default function SimulatorPage({
                     </div>
                     {/* Controles */}
                     <div className="rounded-2xl border border-neutral-600 bg-neutral-900/40 p-6">
+                    <div className="flex items-center justify-between">
                         <h2 className="text-lg font-semibold">{dict.controls}</h2>
                         <button
                             type="button"
@@ -385,9 +388,9 @@ export default function SimulatorPage({
                                 ? (locale === "es" ? "Ocultar modo avanzado" : "Hide advanced mode")
                                 : (locale === "es" ? "Modo avanzado" : "Advanced mode")}
                         </button>
-                        <p className="mt-1 text-sm text-neutral-400">
-                            Ajusta la receta y el tipo de café. El resultado se actualiza en tiempo real.
-                        </p>
+                        </div>
+                        <h3 className="mt-4 text-text-sm sm:text-text-sm lg:text-sm">{dict.adjust}</h3>
+                        
 
                         <div className="mt-6 space-y-5">
                             {/* Molienda */}

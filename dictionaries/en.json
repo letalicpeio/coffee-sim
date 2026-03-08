@@ -1,10 +1,11 @@
 {
-    "title": "Watch how flavor changes.",
+    "title": "Watch how coffee flavor changes.",
     "title2": "Move the grind and the ratio.",
     "title3": "Advanced Mode for Temperature, Pressure, and Water.",
     "subtitle": "An educational heuristic based on extraction theory. Useful to understand whether your recipe will lean more acidic, more bitter, or fuller-bodied.",
     "tryNow": "Try it now",
     "controls": "Controls",
+    "adjust": "Adjust the recipe and type of coffee. The result is updated in real time.",
     "result": "Result",
     "quickPresets": "Quick presets",
     "copyLink": "Copy link",
