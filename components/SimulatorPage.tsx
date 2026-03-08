@@ -317,7 +317,7 @@ export default function SimulatorPage({
                             </div>
                         </div>
 
-                        <div className="mt-6 h-96 space-y-4 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
+                        <div className="mt-6 space-y-4 lg:h-96 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
                             <ExtractionMap
                                 grind={grind}
                                 ratio={ratio}
