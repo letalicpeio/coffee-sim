@@ -209,6 +209,133 @@ export default function SimulatorPage({
                 className="mx-auto max-w-screen-2xl px-6 pb-20"
             >
             <div className="grid gap-6 lg:grid-cols-2">
+                {/* Resultado */}
+                <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
+                    <div className="flex items-start justify-between gap-4">
+                        <div>
+                            <h2 className="text-lg font-semibold">
+                                {recipeName ? recipeName : dict.result}
+                            </h2>
+                            <p className="mt-1 text-sm text-neutral-400">
+                                Estado: <span className="text-neutral-200">{result.state}</span>
+                                <span className="text-neutral-500"> · </span>
+                                Estilo: <span className="text-neutral-200">{result.styleHint}</span>
+                            </p>
+                            <p className="mt-2 text-xs text-neutral-500">
+                                {result.styleHint === "Ristretto" &&
+                                    (locale === "es"
+                                        ? "Más corto y concentrado: más intensidad y cuerpo, menos claridad."
+                                        : "Shorter and more concentrated: more intensity and body, less clarity.")}
+
+                                {result.styleHint === "Espresso" &&
+                                    (locale === "es"
+                                        ? "Equilibrio clásico: buena mezcla entre intensidad, dulzor y claridad."
+                                        : "Classic balance: a good mix of intensity, sweetness and clarity.")}
+
+                                {result.styleHint === "Lungo" &&
+                                    (locale === "es"
+                                        ? "Más largo: suele ganar claridad, pero sube el riesgo de amargor/astringencia."
+                                        : "Longer: often more clarity, but higher risk of bitterness/astringency.")}
+                            </p>
+                        </div>
+
+                        <div className="flex flex-col items-end gap-2">
+                            <span className="rounded-full border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200">
+                                {doseG}g → {result.beverageG}g ({fmtRatio(ratio)})
+                                <p className="mt-1 text-xs text-neutral-400">
+                                    {locale === "es" ? "Tiempo estimado" : "Estimated time"}: {result.estimatedTimeS}s
+                                </p>
+                            </span>
+
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    const url = window.location.href;
+                                    await navigator.clipboard.writeText(url);
+                                    setCopied(true);
+                                    window.setTimeout(() => setCopied(false), 1500);
+                                }}
+                                className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
+                            >
+                                {copied ? (locale === "es" ? "¡Copiado!" : "Copied!") : dict.copyLink}
+                            </button>
+                            <div className="mt-3 flex items-center gap-2">
+                                <input
+                                    type="text"
+                                    placeholder={locale === "es" ? "Nombre de la receta" : "Recipe name"}
+                                    className="flex-1 rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 outline-none"
+                                    value={recipeName}
+                                    onChange={(e) => setRecipeName(e.target.value)}
+                                />
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const qs = new URLSearchParams(searchParams.toString());
+                                        qs.set("name", recipeName);
+                                        router.push(`/${locale}?${qs.toString()}`);
+                                    }}
+                                    className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
+                                >
+                                    {locale === "es" ? "Guardar" : "Save"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {recipeName ? (
+                        <div className="mt-4 rounded-2xl border border-neutral-800 bg-neutral-950/30 p-4">
+                            <div className="flex items-start justify-between gap-4">
+                                <div>
+                                    <p className="text-sm font-semibold text-neutral-100">{recipeName}</p>
+                                    <p className="mt-1 text-xs text-neutral-400">
+                                        {result.styleHint} · {roast} · {process}
+                                    </p>
+                                </div>
+
+                                <div className="text-right">
+                                    <p className="text-xs text-neutral-400">
+                                        {doseG}g → {result.beverageG}g ({fmtRatio(ratio)})
+                                    </p>
+                                    <p className="mt-1 text-xs text-neutral-300">{result.state}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ) : null}
+                    <div className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+                        <div className="flex items-start justify-between gap-4">
+                            <div>
+                                <p className="text-sm text-neutral-300">{dict.flavorProfile}</p>
+                                <p className="mt-1 text-xs text-neutral-500">
+                                    Acidez · Dulzor · Amargor · Astringencia · Cuerpo
+                                </p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-xs text-neutral-400">{dict.estimatedExtraction}</p>
+                                <p className="text-sm text-neutral-200">
+                                    {Math.round(result.extraction)}/100
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 h-96 space-y-4 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
+                            <ExtractionMap
+                                grind={grind}
+                                ratio={ratio}
+                                state={result.state}
+                                styleHint={result.styleHint}
+                            />
+                            <FlavorRadar axes={result.axes} />
+                        </div>
+
+                        <p className="mt-4 text-xs text-neutral-400">
+                            {result.state === "Subextraído" && dict.state_sub}
+                            {result.state === "Balanceado" && dict.state_bal}
+                            {result.state === "Sobreextraído" && dict.state_over}
+                        </p>
+                    </div>
+
+                    <p className="mt-6 text-xs text-neutral-500">{dict.note}</p>
+                </div>
                 {/* Controles */}
                 <div className="rounded-2xl border border-neutral-600 bg-neutral-900/40 p-6">
                     <h2 className="text-lg font-semibold">{dict.controls}</h2>
@@ -484,134 +611,6 @@ export default function SimulatorPage({
                             </div>
                         )}
                     </div>
-                </div>
-
-                {/* Resultado */}
-                <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
-                    <div className="flex items-start justify-between gap-4">
-                        <div>
-                            <h2 className="text-lg font-semibold">
-                                {recipeName ? recipeName : dict.result}
-                            </h2>
-                            <p className="mt-1 text-sm text-neutral-400">
-                                Estado: <span className="text-neutral-200">{result.state}</span>
-                                <span className="text-neutral-500"> · </span>
-                                Estilo: <span className="text-neutral-200">{result.styleHint}</span>
-                            </p>
-                            <p className="mt-2 text-xs text-neutral-500">
-                                {result.styleHint === "Ristretto" &&
-                                    (locale === "es"
-                                        ? "Más corto y concentrado: más intensidad y cuerpo, menos claridad."
-                                        : "Shorter and more concentrated: more intensity and body, less clarity.")}
-
-                                {result.styleHint === "Espresso" &&
-                                    (locale === "es"
-                                        ? "Equilibrio clásico: buena mezcla entre intensidad, dulzor y claridad."
-                                        : "Classic balance: a good mix of intensity, sweetness and clarity.")}
-
-                                {result.styleHint === "Lungo" &&
-                                    (locale === "es"
-                                        ? "Más largo: suele ganar claridad, pero sube el riesgo de amargor/astringencia."
-                                        : "Longer: often more clarity, but higher risk of bitterness/astringency.")}
-                            </p>
-                        </div>
-
-                        <div className="flex flex-col items-end gap-2">
-                            <span className="rounded-full border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200">
-                                {doseG}g → {result.beverageG}g ({fmtRatio(ratio)})
-                                <p className="mt-1 text-xs text-neutral-400">
-                                    {locale === "es" ? "Tiempo estimado" : "Estimated time"}: {result.estimatedTimeS}s
-                                </p>
-                            </span>
-
-                            <button
-                                type="button"
-                                onClick={async () => {
-                                    const url = window.location.href;
-                                    await navigator.clipboard.writeText(url);
-                                    setCopied(true);
-                                    window.setTimeout(() => setCopied(false), 1500);
-                                }}
-                                className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
-                            >
-                                {copied ? (locale === "es" ? "¡Copiado!" : "Copied!") : dict.copyLink}
-                            </button>
-                            <div className="mt-3 flex items-center gap-2">
-                                <input
-                                    type="text"
-                                    placeholder={locale === "es" ? "Nombre de la receta" : "Recipe name"}
-                                    className="flex-1 rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 outline-none"
-                                    value={recipeName}
-                                    onChange={(e) => setRecipeName(e.target.value)}
-                                />
-
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        const qs = new URLSearchParams(searchParams.toString());
-                                        qs.set("name", recipeName);
-                                        router.push(`/${locale}?${qs.toString()}`);
-                                    }}
-                                    className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
-                                >
-                                    {locale === "es" ? "Guardar" : "Save"}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    {recipeName ? (
-                        <div className="mt-4 rounded-2xl border border-neutral-800 bg-neutral-950/30 p-4">
-                            <div className="flex items-start justify-between gap-4">
-                                <div>
-                                    <p className="text-sm font-semibold text-neutral-100">{recipeName}</p>
-                                    <p className="mt-1 text-xs text-neutral-400">
-                                        {result.styleHint} · {roast} · {process}
-                                    </p>
-                                </div>
-
-                                <div className="text-right">
-                                    <p className="text-xs text-neutral-400">
-                                        {doseG}g → {result.beverageG}g ({fmtRatio(ratio)})
-                                    </p>
-                                    <p className="mt-1 text-xs text-neutral-300">{result.state}</p>
-                                </div>
-                            </div>
-                        </div>
-                    ) : null}
-                    <div className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
-                        <div className="flex items-start justify-between gap-4">
-                            <div>
-                                <p className="text-sm text-neutral-300">{dict.flavorProfile}</p>
-                                <p className="mt-1 text-xs text-neutral-500">
-                                    Acidez · Dulzor · Amargor · Astringencia · Cuerpo
-                                </p>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-xs text-neutral-400">{dict.estimatedExtraction}</p>
-                                <p className="text-sm text-neutral-200">
-                                    {Math.round(result.extraction)}/100
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="mt-6 h-96 space-y-4 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
-                            <ExtractionMap
-                                grind={grind}
-                                ratio={ratio}
-                                state={result.state}
-                                styleHint={result.styleHint}
-                            />
-                            <FlavorRadar axes={result.axes} />
-                        </div>
-
-                        <p className="mt-4 text-xs text-neutral-400">
-                            {result.state === "Subextraído" && dict.state_sub}
-                            {result.state === "Balanceado" && dict.state_bal}
-                            {result.state === "Sobreextraído" && dict.state_over}
-                        </p>
-                    </div>
-
-                    <p className="mt-6 text-xs text-neutral-500">{dict.note}</p>
                 </div>
             </div>
             </section>
