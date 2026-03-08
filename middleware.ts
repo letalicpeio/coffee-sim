@@ -4,6 +4,13 @@ import type { NextRequest } from "next/server";
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // Redirigir raíz a /es
+  if (pathname === "/") {
+    const url = req.nextUrl.clone();
+    url.pathname = "/es";
+    return NextResponse.redirect(url);
+  }
+
   // Detectar /es o /en como primer segmento
   const seg = pathname.split("/")[1];
   const locale = seg === "en" ? "en" : seg === "es" ? "es" : null;
@@ -18,5 +25,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/es/:path*", "/en/:path*"],
+  matcher: ["/", "/es/:path*", "/en/:path*"],
 };

@@ -28,32 +28,30 @@ export default function SimulatorPage({
     const [process, setProcess] = useState<Process>("lavado");
     const [recipeName, setRecipeName] = useState("");
     const [copied, setCopied] = useState(false);
-
+    const doseG = 18;
     const [advancedMode, setAdvancedMode] = useState(false);
     const [useTemperature, setUseTemperature] = useState(false);
     const [usePressure, setUsePressure] = useState(false);
     const [useWater, setUseWater] = useState(false);
-
     const [temperature, setTemperature] = useState(93);
     const [pressure, setPressure] = useState(9);
     const [waterGH, setWaterGH] = useState(6);
     const [waterKH, setWaterKH] = useState(3);
 
-    const doseG = 18;
-
+    // Leer URL al cargar / cuando cambia la query
     useEffect(() => {
         const g = searchParams.get("grind");
         const r = searchParams.get("ratio");
         const ro = searchParams.get("roast");
         const pr = searchParams.get("process");
-        const nm = searchParams.get("name");
+        const name = searchParams.get("name");
         const t = searchParams.get("temperature");
         const p = searchParams.get("pressure");
         const gh = searchParams.get("waterGH");
         const kh = searchParams.get("waterKH");
 
-        if (nm !== null) {
-            setRecipeName(nm);
+        if (name !== null) {
+            setRecipeName(name);
         }
 
         if (g !== null) {
@@ -68,16 +66,13 @@ export default function SimulatorPage({
 
         if (ro === "claro" || ro === "medio" || ro === "oscuro") setRoast(ro);
         if (pr === "lavado" || pr === "natural" || pr === "honey") setProcess(pr);
-
+        if (name !== null) setRecipeName(name);
         if (t !== null) {
             const n = Number(t);
-            if (!Number.isNaN(n)) {
-                setTemperature(Math.max(88, Math.min(98, n)));
-                setAdvancedMode(true);
-                setUseTemperature(true);
-            }
+            if (!Number.isNaN(n)) setTemperature(Math.max(88, Math.min(98, n)));
+            setAdvancedMode(true);
+            setUseTemperature(true);
         }
-
         if (p !== null) {
             const n = Number(p);
             if (!Number.isNaN(n)) {
@@ -86,7 +81,6 @@ export default function SimulatorPage({
                 setUsePressure(true);
             }
         }
-
         if (gh !== null) {
             const n = Number(gh);
             if (!Number.isNaN(n)) {
@@ -95,7 +89,6 @@ export default function SimulatorPage({
                 setUseWater(true);
             }
         }
-
         if (kh !== null) {
             const n = Number(kh);
             if (!Number.isNaN(n)) {
@@ -106,16 +99,13 @@ export default function SimulatorPage({
         }
     }, [searchParams]);
 
+    // Mantener URL sincronizada con el estado
     useEffect(() => {
         const qs = new URLSearchParams();
         qs.set("grind", String(grind));
         qs.set("ratio", ratio.toFixed(1));
         qs.set("roast", roast);
         qs.set("process", process);
-
-        if (recipeName.trim()) {
-            qs.set("name", recipeName.trim());
-        }
 
         if (advancedMode && useTemperature) {
             qs.set("temperature", String(temperature));
@@ -130,6 +120,7 @@ export default function SimulatorPage({
             qs.set("waterKH", String(waterKH));
         }
 
+
         const newUrl = `${window.location.pathname}?${qs.toString()}`;
         window.history.replaceState(null, "", newUrl);
     }, [
@@ -137,7 +128,6 @@ export default function SimulatorPage({
         ratio,
         roast,
         process,
-        recipeName,
         advancedMode,
         useTemperature,
         temperature,
@@ -147,6 +137,7 @@ export default function SimulatorPage({
         waterGH,
         waterKH,
     ]);
+
 
     const result = useMemo(
         () =>
@@ -177,26 +168,30 @@ export default function SimulatorPage({
             waterKH,
         ]
     );
-
     const stateLabel =
         result.state === "Subextraído"
             ? dict.state_under
             : result.state === "Balanceado"
                 ? dict.state_balanced
-                : dict.state_over0;
+                : dict.state_over;
 
     return (
         <main className="min-h-screen bg-neutral-950 text-neutral-50">
-            <section className="mx-auto max-w-screen-2xl px-6 pt-16 pb-10">
+            {/* Hero */}
+            <section className="mx-auto max-w-screen-8xl px-6 pt-16 pb-10">
                 <div className="max-w-8xl">
-                    <p className="text-sm text-neutral-400">{dict.heroTagline}</p>
+                    <p className="text-sm text-neutral-400">
+                        {locale === "es"
+                            ? "Simulador (MVP) · Espresso · Perfil sensorial"
+                            : "Simulator (MVP) · Espresso · Sensory profile"}
+                    </p>
 
-                    <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
+                    <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
                         {recipeName ? (
                             <>
                                 <span className="block">{recipeName}</span>
-                                <span className="mt-3 block text-base text-neutral-300 sm:text-lg">
-                                    {dict.espressoSimulation}
+                                <span className="block text-neutral-300 text-base sm:text-lg mt-3">
+                                    {locale === "es" ? "Simulación de espresso" : "Espresso simulation"}
                                 </span>
                             </>
                         ) : (
@@ -208,37 +203,36 @@ export default function SimulatorPage({
                         )}
                     </h1>
 
-                    <p className="mt-4 text-base text-neutral-300 sm:text-lg">{dict.subtitle}</p>
+                    <p className="mt-4 text-base text-neutral-300 sm:text-lg">
+                        {dict.subtitle}
+                    </p>
+                    <div className="mt-0 flex flex-wrap items-center gap-3">
+                        <div className="mt-6 flex flex-wrap gap-2">
+                            {["Espresso", "Molienda", "Ratio", "Tueste", "Proceso"].map((t) => (
+                                <span
+                                    key={t}
+                                    className="rounded-full border border-neutral-800 bg-neutral-900/40 px-3 py-1 text-xs text-neutral-200"
+                                >
+                                    {t}
+                                </span>
+                            ))}
+                        </div>
 
-                    <div className="mt-6 flex flex-wrap items-center gap-3">
-                        {[
-                            dict.chip_espresso,
-                            dict.chip_grind,
-                            dict.chip_ratio,
-                            dict.chip_roast,
-                            dict.chip_process,
-                        ].map((t) => (
-                            <span
-                                key={t}
-                                className="rounded-full border border-neutral-800 bg-neutral-900/40 px-3 py-1 text-xs text-neutral-200"
+                        <div className="mt-6 flex items-center gap-2 text-xs">
+                            <span className="text-neutral-500">Language / Idioma:</span>
+                            {/* botón cambiar de idioma */}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const targetLocale = locale === "es" ? "en" : "es";
+                                    const qs = searchParams.toString();
+                                    router.push(`/${targetLocale}${qs ? `?${qs}` : ""}`);
+                                }}
+                                className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-neutral-200 hover:bg-neutral-900"
                             >
-                                {t}
-                            </span>
-                        ))}
-
-                        <span className="ml-1 text-xs text-neutral-500">{dict.languageLabel}:</span>
-
-                        <button
-                            type="button"
-                            onClick={() => {
-                                const targetLocale = locale === "es" ? "en" : "es";
-                                const qs = searchParams.toString();
-                                router.push(`/${targetLocale}${qs ? `?${qs}` : ""}`);
-                            }}
-                            className="rounded-full border border-neutral-800 bg-neutral-900/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
-                        >
-                            {locale === "es" ? dict.lang_en : dict.lang_es}
-                        </button>
+                                {locale === "es" ? dict.lang_en : dict.lang_es}
+                            </button>
+                        </div>
                     </div>
 
                     <a
@@ -246,11 +240,17 @@ export default function SimulatorPage({
                         className="mt-8 inline-flex items-center justify-center rounded-xl bg-neutral-50 px-5 py-3 text-sm font-medium text-neutral-950 hover:bg-white"
                     >
                         {dict.tryNow}
+
                     </a>
                 </div>
+
             </section>
 
-            <section id="simulador" className="mx-auto max-w-screen-2xl px-6 pb-20">
+            {/* Simulador */}
+            <section
+                id="simulador"
+                className="mx-auto max-w-screen-2xl px-6 pb-20"
+            >
                 <div className="grid gap-6 lg:grid-cols-2">
                     {/* Resultado */}
                     <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
@@ -259,30 +259,36 @@ export default function SimulatorPage({
                                 <h2 className="text-lg font-semibold">
                                     {recipeName ? recipeName : dict.result}
                                 </h2>
-
                                 <p className="mt-1 text-sm text-neutral-400">
-                                    {dict.statusLabel}:{" "}
-                                    <span className="text-neutral-200">{stateLabel}</span>
+                                    {dict.statusLabel}: <span>{stateLabel}</span>
                                     <span className="text-neutral-500"> · </span>
-                                    {dict.styleLabel}:{" "}
-                                    <span className="text-neutral-200">{result.styleHint}</span>
+                                    Estilo: <span className="text-neutral-200">{result.styleHint}</span>
                                 </p>
-
                                 <p className="mt-2 text-xs text-neutral-500">
-                                    {result.styleHint === "Ristretto" && dict.style_ristretto_desc}
-                                    {result.styleHint === "Espresso" && dict.style_espresso_desc}
-                                    {result.styleHint === "Lungo" && dict.style_lungo_desc}
+                                    {result.styleHint === "Ristretto" &&
+                                        (locale === "es"
+                                            ? "Más corto y concentrado: más intensidad y cuerpo, menos claridad."
+                                            : "Shorter and more concentrated: more intensity and body, less clarity.")}
+
+                                    {result.styleHint === "Espresso" &&
+                                        (locale === "es"
+                                            ? "Equilibrio clásico: buena mezcla entre intensidad, dulzor y claridad."
+                                            : "Classic balance: a good mix of intensity, sweetness and clarity.")}
+
+                                    {result.styleHint === "Lungo" &&
+                                        (locale === "es"
+                                            ? "Más largo: suele ganar claridad, pero sube el riesgo de amargor/astringencia."
+                                            : "Longer: often more clarity, but higher risk of bitterness/astringency.")}
                                 </p>
                             </div>
 
                             <div className="flex flex-col items-end gap-2">
                                 <span className="rounded-full border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200">
                                     {doseG}g → {result.beverageG}g ({fmtRatio(ratio)})
+                                    <p className="mt-1 text-xs text-neutral-400">
+                                        {locale === "es" ? "Tiempo estimado" : "Estimated time"}: {result.estimatedTimeS}s
+                                    </p>
                                 </span>
-
-                                <p className="text-xs text-neutral-400">
-                                    {dict.estimatedTime}: {result.estimatedTimeS}s
-                                </p>
 
                                 <button
                                     type="button"
@@ -294,13 +300,12 @@ export default function SimulatorPage({
                                     }}
                                     className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
                                 >
-                                    {copied ? dict.copied : dict.copyLink}
+                                    {copied ? (locale === "es" ? "¡Copiado!" : "Copied!") : dict.copyLink}
                                 </button>
-
                                 <div className="mt-3 flex items-center gap-2">
                                     <input
                                         type="text"
-                                        placeholder={dict.recipeNamePlaceholder}
+                                        placeholder={locale === "es" ? "Nombre de la receta" : "Recipe name"}
                                         className="flex-1 rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 outline-none"
                                         value={recipeName}
                                         onChange={(e) => setRecipeName(e.target.value)}
@@ -310,21 +315,16 @@ export default function SimulatorPage({
                                         type="button"
                                         onClick={() => {
                                             const qs = new URLSearchParams(searchParams.toString());
-                                            if (recipeName.trim()) {
-                                                qs.set("name", recipeName.trim());
-                                            } else {
-                                                qs.delete("name");
-                                            }
+                                            qs.set("name", recipeName);
                                             router.push(`/${locale}?${qs.toString()}`);
                                         }}
                                         className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
                                     >
-                                        {dict.save}
+                                        {locale === "es" ? "Guardar" : "Save"}
                                     </button>
                                 </div>
                             </div>
                         </div>
-
                         {recipeName ? (
                             <div className="mt-4 rounded-2xl border border-neutral-800 bg-neutral-950/30 p-4">
                                 <div className="flex items-start justify-between gap-4">
@@ -344,12 +344,13 @@ export default function SimulatorPage({
                                 </div>
                             </div>
                         ) : null}
-
                         <div className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
                             <div className="flex items-start justify-between gap-4">
                                 <div>
                                     <p className="text-sm text-neutral-300">{dict.flavorProfile}</p>
-                                    <p className="mt-1 text-xs text-neutral-500">{dict.axesLabel}</p>
+                                    <p className="mt-1 text-xs text-neutral-500">
+                                        Acidez · Dulzor · Amargor · Astringencia · Cuerpo
+                                    </p>
                                 </div>
                                 <div className="text-right">
                                     <p className="text-xs text-neutral-400">{dict.estimatedExtraction}</p>
@@ -359,7 +360,7 @@ export default function SimulatorPage({
                                 </div>
                             </div>
 
-                            <div className="mt-6 space-y-4 lg:grid lg:h-96 lg:grid-cols-2 lg:gap-6 lg:space-y-0">
+                            <div className="mt-6 space-y-0 lg:h-96 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
                                 <ExtractionMap
                                     grind={grind}
                                     ratio={ratio}
@@ -370,37 +371,37 @@ export default function SimulatorPage({
                                 <FlavorRadar axes={result.axes} />
                             </div>
 
-                            <p className="mt-2 text-[11px] text-neutral-400 lg:mt-4 lg:text-xs">
+                            <p className="mt-0 text-[14px] text-neutral-400 lg:mt-4 lg:text-xs">
                                 {result.state === "Subextraído" && dict.state_sub}
                                 {result.state === "Balanceado" && dict.state_bal}
                                 {result.state === "Sobreextraído" && dict.state_over}
                             </p>
                         </div>
 
-                        <p className="mt-6 text-xs text-neutral-500">{dict.note}</p>
-                    </div>
 
+                    </div>
                     {/* Controles */}
                     <div className="rounded-2xl border border-neutral-600 bg-neutral-900/40 p-6">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-between">
                             <h2 className="text-lg font-semibold">{dict.controls}</h2>
-
                             <button
                                 type="button"
                                 onClick={() => setAdvancedMode(!advancedMode)}
-                                className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
+                                className="mt-0 rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
                             >
-                                {advancedMode ? dict.advancedHide : dict.advancedShow}
+                                {advancedMode
+                                    ? (locale === "es" ? "Ocultar modo avanzado" : "Hide advanced mode")
+                                    : (locale === "es" ? "Modo avanzado" : "Advanced mode")}
                             </button>
                         </div>
+                        <h3 className="mt-4 text-text-sm sm:text-text-sm lg:text-sm">{dict.adjust}</h3>
 
-                        <p className="mt-1 text-sm text-neutral-400">{dict.controlsDescription}</p>
 
                         <div className="mt-6 space-y-5">
                             {/* Molienda */}
                             <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">{dict.grindLabel}</span>
+                                    <span className="text-sm font-medium">Molienda</span>
                                     <span className="text-xs text-neutral-400">{grind}/100</span>
                                 </div>
                                 <input
@@ -412,15 +413,15 @@ export default function SimulatorPage({
                                     onChange={(e) => setGrind(Number(e.target.value))}
                                 />
                                 <div className="mt-2 flex justify-between text-[11px] text-neutral-500">
-                                    <span>{dict.grindCoarse}</span>
-                                    <span>{dict.grindFine}</span>
+                                    <span>gruesa</span>
+                                    <span>fina</span>
                                 </div>
                             </div>
 
                             {/* Ratio */}
                             <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">{dict.ratioLabel}</span>
+                                    <span className="text-sm font-medium">Ratio</span>
                                     <span className="text-xs text-neutral-400">{fmtRatio(ratio)}</span>
                                 </div>
                                 <input
@@ -433,16 +434,16 @@ export default function SimulatorPage({
                                     onChange={(e) => setRatio(Number(e.target.value))}
                                 />
                                 <div className="mt-2 flex justify-between text-[11px] text-neutral-500">
-                                    <span>{dict.ratioShort}</span>
-                                    <span>{dict.ratioLong}</span>
+                                    <span>corto</span>
+                                    <span>largo</span>
                                 </div>
                             </div>
-
-                            {/* Temperatura */}
                             {advancedMode && useTemperature && (
                                 <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm font-medium">{dict.temperatureLabel}</span>
+                                        <span className="text-sm font-medium">
+                                            {locale === "es" ? "Temperatura" : "Temperature"}
+                                        </span>
                                         <span className="text-xs text-neutral-400">{temperature}°C</span>
                                     </div>
 
@@ -462,12 +463,12 @@ export default function SimulatorPage({
                                     </div>
                                 </div>
                             )}
-
-                            {/* Presión */}
                             {advancedMode && usePressure && (
                                 <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm font-medium">{dict.pressureLabel}</span>
+                                        <span className="text-sm font-medium">
+                                            {locale === "es" ? "Presión" : "Pressure"}
+                                        </span>
                                         <span className="text-xs text-neutral-400">{pressure} bar</span>
                                     </div>
 
@@ -487,12 +488,12 @@ export default function SimulatorPage({
                                     </div>
                                 </div>
                             )}
-
-                            {/* Agua */}
                             {advancedMode && useWater && (
                                 <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm font-medium">{dict.waterLabel}</span>
+                                        <span className="text-sm font-medium">
+                                            {locale === "es" ? "Agua" : "Water"}
+                                        </span>
                                         <span className="text-xs text-neutral-400">
                                             GH {waterGH} · KH {waterKH}
                                         </span>
@@ -537,7 +538,7 @@ export default function SimulatorPage({
                             {/* Tipo de café */}
                             <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">{dict.coffeeType}</span>
+                                    <span className="text-sm font-medium">Tipo de café</span>
                                     <span className="text-xs text-neutral-500">
                                         {roast} · {process}
                                     </span>
@@ -545,7 +546,7 @@ export default function SimulatorPage({
 
                                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
                                     <label className="text-xs text-neutral-400">
-                                        {dict.roastLabel}
+                                        Tueste
                                         <select
                                             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-100 outline-none"
                                             value={roast}
@@ -558,7 +559,7 @@ export default function SimulatorPage({
                                     </label>
 
                                     <label className="text-xs text-neutral-400">
-                                        {dict.processLabel}
+                                        Proceso
                                         <select
                                             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-100 outline-none"
                                             value={process}
@@ -571,12 +572,15 @@ export default function SimulatorPage({
                                     </label>
                                 </div>
 
-                                <p className="mt-3 text-xs text-neutral-500">{dict.roastAdvice}</p>
+                                <p className="mt-3 text-xs text-neutral-500">
+                                    Consejo: tuestes claros suelen castigar más la subextracción; tuestes oscuros suben el amargor antes.
+                                </p>
+
                             </div>
 
                             {/* Presets rápidos */}
                             <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
-                                <p className="mb-3 text-xs text-neutral-400">{dict.quickPresets}</p>
+                                <p className="text-xs text-neutral-400 mb-3">{dict.quickPresets}</p>
                                 <div className="flex flex-wrap gap-2">
                                     <button
                                         type="button"
@@ -586,9 +590,9 @@ export default function SimulatorPage({
                                             setRoast("claro");
                                             setProcess("lavado");
                                         }}
-                                        className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800"
+                                        className="px-3 py-1.5 text-xs border border-neutral-700 rounded-lg bg-neutral-900 hover:bg-neutral-800 transition"
                                     >
-                                        {dict.preset_lightRistretto}
+                                        Ristretto claro
                                     </button>
 
                                     <button
@@ -599,9 +603,9 @@ export default function SimulatorPage({
                                             setRoast("medio");
                                             setProcess("lavado");
                                         }}
-                                        className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800"
+                                        className="px-3 py-1.5 text-xs border border-neutral-700 rounded-lg bg-neutral-900 hover:bg-neutral-800 transition"
                                     >
-                                        {dict.preset_classicEspresso}
+                                        Espresso clásico
                                     </button>
 
                                     <button
@@ -612,44 +616,44 @@ export default function SimulatorPage({
                                             setRoast("medio");
                                             setProcess("natural");
                                         }}
-                                        className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800"
+                                        className="px-3 py-1.5 text-xs border border-neutral-700 rounded-lg bg-neutral-900 hover:bg-neutral-800 transition"
                                     >
-                                        {dict.preset_naturalLungo}
+                                        Lungo natural
                                     </button>
                                 </div>
                             </div>
-
-                            {/* Parámetros avanzados */}
+                            <p className="mt-6 text-xs text-neutral-500">{dict.note}</p>
                             {advancedMode && (
-                                <div className="mt-4 rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
-                                    <p className="mb-3 text-xs text-neutral-400">
-                                        {dict.advancedParameters}
+                                <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4 mt-4">
+                                    <p className="text-xs text-neutral-400 mb-3">
+                                        {locale === "es" ? "Parámetros avanzados" : "Advanced parameters"}
                                     </p>
 
                                     <div className="flex flex-wrap gap-2">
                                         <button
                                             type="button"
                                             onClick={() => setUseTemperature(!useTemperature)}
-                                            className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs hover:bg-neutral-800"
+                                            className="px-3 py-1.5 text-xs border border-neutral-700 rounded-lg bg-neutral-900 hover:bg-neutral-800"
                                         >
-                                            {dict.addTemperature}
+                                            {locale === "es" ? "Añadir temperatura" : "Add temperature"}
                                         </button>
 
                                         <button
                                             type="button"
                                             onClick={() => setUsePressure(!usePressure)}
-                                            className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs hover:bg-neutral-800"
+                                            className="px-3 py-1.5 text-xs border border-neutral-700 rounded-lg bg-neutral-900 hover:bg-neutral-800"
                                         >
-                                            {dict.addPressure}
+                                            {locale === "es" ? "Añadir presión" : "Add pressure"}
                                         </button>
 
                                         <button
                                             type="button"
                                             onClick={() => setUseWater(!useWater)}
-                                            className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs hover:bg-neutral-800"
+                                            className="px-3 py-1.5 text-xs border border-neutral-700 rounded-lg bg-neutral-900 hover:bg-neutral-800"
                                         >
-                                            {dict.addWater}
+                                            {locale === "es" ? "Añadir agua" : "Add water"}
                                         </button>
+
                                     </div>
                                 </div>
                             )}
