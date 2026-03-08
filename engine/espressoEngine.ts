@@ -10,8 +10,11 @@ export type EspressoInputs = {
   doseG: number;
   temperatureC?: number;
   pressureBar?: number;
+  waterGH?: number;
+  waterKH?: number;
   roast: Roast;
   process: Process;
+
 };
 
 export type FlavorAxes = {
@@ -126,7 +129,9 @@ function computeSensoryProfile(
   ratio: number,
   roast: Roast,
   process: Process,
-  temperatureC: number
+  temperatureC: number,
+  waterGH: number,
+  waterKH: number
 ): FlavorAxes {
   const ratioN = (ratio - 1.0) / (3.2 - 1.0);
 
@@ -167,8 +172,15 @@ function computeSensoryProfile(
   const temperatureAcidityBias = (0.5 - tempN) * 8;
   const temperatureBitternessBias = (tempN - 0.5) * 10;
   const temperatureAstringencyBias = (tempN - 0.5) * 6;
+  const ghN = (waterGH - 1) / (12 - 1);
+  const khN = waterKH / 8;
+  const waterBodyBias = (ghN - 0.5) * 8;
+  const waterSweetnessBias = (ghN - 0.5) * 6;
+  const waterAcidityBias = -(khN * 10);
 
-  const acidity = clamp(75 - E * 0.8 + acidityBias + temperatureAcidityBias);
+  const acidity = clamp(
+    75 - E * 0.8 + acidityBias + temperatureAcidityBias + waterAcidityBias
+  );
   const bitterness = clamp(
     (E - 50) * 1.1 + 25 + bitternessBias + temperatureBitternessBias
   );
@@ -196,11 +208,11 @@ function computeSensoryProfile(
   }
 
   const sweetness = clamp(
-    sweetnessBase + sweetnessBias + ratioSweetnessBias
+    sweetnessBase + sweetnessBias + ratioSweetnessBias + waterSweetnessBias
   );
 
   const ristrettoBoost = (1 - ratioN) * 14;
-  const body = clamp(25 + E * 0.55 + ristrettoBoost + bodyBias);
+  const body = clamp(25 + E * 0.55 + ristrettoBoost + bodyBias + waterBodyBias);
 
   return {
     acidez: Math.round(acidity),
@@ -217,6 +229,8 @@ export function simulateEspresso(input: EspressoInputs): EspressoResult {
   const doseG = Math.max(1, input.doseG);
   const temperatureC = Math.max(88, Math.min(98, input.temperatureC ?? 93));
   const pressureBar = Math.max(6, Math.min(10, input.pressureBar ?? 9));
+  const waterGH = Math.max(1, Math.min(12, input.waterGH ?? 6));
+  const waterKH = Math.max(0, Math.min(8, input.waterKH ?? 3));
   const baseExtraction = computeExtraction(
     grind,
     ratio,
@@ -258,7 +272,9 @@ export function simulateEspresso(input: EspressoInputs): EspressoResult {
     ratio,
     input.roast,
     input.process,
-    temperatureC
+    temperatureC,
+    waterGH,
+    waterKH
   );
   const state = getExtractionState(E, input.roast);
 

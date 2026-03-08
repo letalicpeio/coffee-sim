@@ -48,6 +48,8 @@ export default function SimulatorPage({
         const name = searchParams.get("name");
         const t = searchParams.get("temperature");
         const p = searchParams.get("pressure");
+        const gh = searchParams.get("waterGH");
+        const kh = searchParams.get("waterKH");
 
         if (name !== null) {
             setRecipeName(name);
@@ -80,6 +82,22 @@ export default function SimulatorPage({
                 setUsePressure(true);
             }
         }
+        if (gh !== null) {
+            const n = Number(gh);
+            if (!Number.isNaN(n)) {
+                setWaterGH(Math.max(1, Math.min(12, n)));
+                setAdvancedMode(true);
+                setUseWater(true);
+            }
+        }
+        if (kh !== null) {
+            const n = Number(kh);
+            if (!Number.isNaN(n)) {
+                setWaterKH(Math.max(0, Math.min(8, n)));
+                setAdvancedMode(true);
+                setUseWater(true);
+            }
+        }
     }, [searchParams]);
 
     // Mantener URL sincronizada con el estado
@@ -98,6 +116,12 @@ export default function SimulatorPage({
             qs.set("pressure", String(pressure));
         }
 
+        if (advancedMode && useWater) {
+            qs.set("waterGH", String(waterGH));
+            qs.set("waterKH", String(waterKH));
+        }
+
+
         const newUrl = `${window.location.pathname}?${qs.toString()}`;
         window.history.replaceState(null, "", newUrl);
     }, [
@@ -110,6 +134,9 @@ export default function SimulatorPage({
         temperature,
         usePressure,
         pressure,
+        useWater,
+        waterGH,
+        waterKH,
     ]);
 
 
@@ -123,6 +150,8 @@ export default function SimulatorPage({
                 process,
                 temperatureC: advancedMode && useTemperature ? temperature : undefined,
                 pressureBar: advancedMode && usePressure ? pressure : undefined,
+                waterGH: advancedMode && useWater ? waterGH : undefined,
+                waterKH: advancedMode && useWater ? waterKH : undefined,
             }),
         [
             grind,
@@ -135,6 +164,9 @@ export default function SimulatorPage({
             temperature,
             usePressure,
             pressure,
+            useWater,
+            waterGH,
+            waterKH,
         ]
     );
 
@@ -167,7 +199,7 @@ export default function SimulatorPage({
                     <p className="mt-4 text-base text-neutral-300 sm:text-lg">
                         {dict.subtitle}
                     </p>
-
+                    <div className="grid gap-6 lg:grid-cols-2">
                     <div className="mt-6 flex flex-wrap gap-2">
                         {["Espresso", "Molienda", "Ratio", "Tueste", "Proceso"].map((t) => (
                             <span
@@ -179,28 +211,32 @@ export default function SimulatorPage({
                         ))}
                     </div>
 
+                    <div className="mt-6 flex items-center gap-2 text-xs">
+                        <span className="text-neutral-500">Language / Idioma:</span>
+                        {/* botón cambiar de idioma */}
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const targetLocale = locale === "es" ? "en" : "es";
+                                const qs = searchParams.toString();
+                                router.push(`/${targetLocale}${qs ? `?${qs}` : ""}`);
+                            }}
+                            className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-neutral-200 hover:bg-neutral-900"
+                        >
+                            {locale === "es" ? dict.lang_en : dict.lang_es}
+                        </button>
+                    </div>
+                    </div>
+
                     <a
                         href="#simulador"
                         className="mt-8 inline-flex items-center justify-center rounded-xl bg-neutral-50 px-5 py-3 text-sm font-medium text-neutral-950 hover:bg-white"
                     >
                         {dict.tryNow}
-                        <div className="mt-6 flex items-center gap-2 text-xs">
-                            <span className="text-neutral-500">Idioma:</span>
-                            {/* botón cambiar de idioma */}
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    const targetLocale = locale === "es" ? "en" : "es";
-                                    const qs = searchParams.toString();
-                                    router.push(`/${targetLocale}${qs ? `?${qs}` : ""}`);
-                                }}
-                                className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-neutral-200 hover:bg-neutral-900"
-                            >
-                                {locale === "es" ? dict.lang_en : dict.lang_es}
-                            </button>
-                        </div>
+
                     </a>
                 </div>
+
             </section>
 
             {/* Simulador */}
@@ -317,7 +353,7 @@ export default function SimulatorPage({
                                 </div>
                             </div>
 
-                            <div className="mt-6 space-y-0 sticky top-0 z-10 bg-neutral-950 pt-2 pb-3 lg:static lg:h-96 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
+                            <div className="mt-6 space-y-0 lg:h-96 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
                                 <ExtractionMap
                                     grind={grind}
                                     ratio={ratio}
