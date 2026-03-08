@@ -38,6 +38,7 @@ export default function SimulatorPage({
     const [pressure, setPressure] = useState(9);
     const [waterGH, setWaterGH] = useState(6);
     const [waterKH, setWaterKH] = useState(3);
+    const [isSwitchingLocale, setIsSwitchingLocale] = useState(false);
 
     const doseG = 18;
 
@@ -107,6 +108,7 @@ export default function SimulatorPage({
     }, [searchParams]);
 
     useEffect(() => {
+        if (isSwitchingLocale) return;
         const qs = new URLSearchParams();
         qs.set("grind", String(grind));
         qs.set("ratio", ratio.toFixed(1));
@@ -147,6 +149,10 @@ export default function SimulatorPage({
         waterGH,
         waterKH,
     ]);
+
+    useEffect(() => {
+        setIsSwitchingLocale(false);
+    }, [locale]);
 
     const result = useMemo(
         () =>
@@ -231,6 +237,7 @@ export default function SimulatorPage({
                         <button
                             type="button"
                             onClick={() => {
+                                setIsSwitchingLocale(true);
                                 const targetLocale = locale === "es" ? "en" : "es";
                                 const qs = searchParams.toString();
                                 router.push(`/${targetLocale}${qs ? `?${qs}` : ""}`);
