@@ -43,6 +43,7 @@ export default function SimulatorPage({
     const doseG = 18;
 
     useEffect(() => {
+        if (isSwitchingLocale) return;
         const g = searchParams.get("grind");
         const r = searchParams.get("ratio");
         const ro = searchParams.get("roast");
@@ -105,7 +106,7 @@ export default function SimulatorPage({
                 setUseWater(true);
             }
         }
-    }, [searchParams]);
+    }, [searchParams, isSwitchingLocale]);
 
     useEffect(() => {
         if (isSwitchingLocale) return;
