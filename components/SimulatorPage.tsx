@@ -318,7 +318,7 @@ export default function SimulatorPage({
                             </div>
 
                             <div className="mt-6 space-y-4 lg:h-96 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
-                                <div className="h-64 sm:h-72 lg:h-auto">
+                                <div className="h-56 sm:h-64 lg:h-auto">
                                     <ExtractionMap
                                         grind={grind}
                                         ratio={ratio}
@@ -327,7 +327,7 @@ export default function SimulatorPage({
                                     />
                                 </div>
 
-                                <div className="h-64 sm:h-72 lg:h-auto">
+                                <div className="h-56 sm:h-64 lg:h-auto">
                                     <FlavorRadar axes={result.axes} />
                                 </div>
                             </div>
