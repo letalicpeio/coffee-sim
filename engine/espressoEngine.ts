@@ -8,7 +8,8 @@ export type EspressoInputs = {
   ratio: number;
   // dosis en gramos (solo para mostrar 18g -> 36g)
   doseG: number;
-
+  temperatureC?: number;
+  pressureBar?: number;
   roast: Roast;
   process: Process;
 };
@@ -40,19 +41,30 @@ function bell(x: number, center: number, width: number) {
   return Math.exp(-(z * z));
 }
 
-function computeExtraction(grind: number, ratio: number) {
+function computeExtraction(
+  grind: number,
+  ratio: number,
+  temperatureC: number,
+  pressureBar: number
+) {
   const grindN = grind / 100;
   const ratioN = (ratio - 1.0) / (3.2 - 1.0);
 
   const grindContribution = grindN * 55;
   const ratioContribution = ratioN * 35;
   const interactionContribution = grindN * ratioN * 20;
+  const temperatureN = (temperatureC - 88) / (98 - 88);
+  const temperatureContribution = (temperatureN - 0.5) * 10;
+  const pressureN = (pressureBar - 6) / (10 - 6);
+  const pressureContribution = (pressureN - 0.5) * 8;
 
   let extraction =
     12 +
     grindContribution +
     ratioContribution +
-    interactionContribution;
+    interactionContribution +
+    temperatureContribution +
+    pressureContribution;
 
   return clamp(extraction);
 }
@@ -113,7 +125,8 @@ function computeSensoryProfile(
   extraction: number,
   ratio: number,
   roast: Roast,
-  process: Process
+  process: Process,
+  temperatureC: number
 ): FlavorAxes {
   const ratioN = (ratio - 1.0) / (3.2 - 1.0);
 
@@ -150,17 +163,28 @@ function computeSensoryProfile(
   }
 
   const E = extraction;
+  const tempN = (temperatureC - 88) / (98 - 88);
+  const temperatureAcidityBias = (0.5 - tempN) * 8;
+  const temperatureBitternessBias = (tempN - 0.5) * 10;
+  const temperatureAstringencyBias = (tempN - 0.5) * 6;
 
-  const acidity = clamp(75 - E * 0.8 + acidityBias);
-  const bitterness = clamp((E - 50) * 1.1 + 25 + bitternessBias);
-  const astringency = clamp((E - 55) * 1.15 + 18 + astringencyBias);
+  const acidity = clamp(75 - E * 0.8 + acidityBias + temperatureAcidityBias);
+  const bitterness = clamp(
+    (E - 50) * 1.1 + 25 + bitternessBias + temperatureBitternessBias
+  );
+  const astringency = clamp(
+    (E - 55) * 1.15 +
+    18 +
+    astringencyBias +
+    temperatureAstringencyBias
+  );
 
   const sweetnessBase = 15 + 70 * bell(E, 52, 18);
 
   // ratio corto suele percibirse más intenso pero menos abierto;
   // ratio más largo puede dar más claridad, pero si te pasas pierde dulzor
   let ratioSweetnessBias = 0;
-  
+
   if (ratio < 1.7) {
     ratioSweetnessBias = -4;
   } else if (ratio <= 2.4) {
@@ -170,7 +194,7 @@ function computeSensoryProfile(
   } else {
     ratioSweetnessBias = -5;
   }
-  
+
   const sweetness = clamp(
     sweetnessBase + sweetnessBias + ratioSweetnessBias
   );
@@ -191,8 +215,14 @@ export function simulateEspresso(input: EspressoInputs): EspressoResult {
   const grind = clamp(input.grind, 0, 100);
   const ratio = Math.max(1.0, Math.min(3.2, input.ratio));
   const doseG = Math.max(1, input.doseG);
-
-  const baseExtraction = computeExtraction(grind, ratio);
+  const temperatureC = Math.max(88, Math.min(98, input.temperatureC ?? 93));
+  const pressureBar = Math.max(6, Math.min(10, input.pressureBar ?? 9));
+  const baseExtraction = computeExtraction(
+    grind,
+    ratio,
+    temperatureC,
+    pressureBar
+  );
   const estimatedTimeS = computeShotTime(grind, ratio, input.roast);
   const timeAdjustment = getTimeExtractionAdjustment(estimatedTimeS);
   const extraction = clamp(baseExtraction + timeAdjustment);
@@ -223,8 +253,13 @@ export function simulateEspresso(input: EspressoInputs): EspressoResult {
   }
 
   const E = extraction;
-  const axes = computeSensoryProfile(E, ratio, input.roast, input.process);
-
+  const axes = computeSensoryProfile(
+    E,
+    ratio,
+    input.roast,
+    input.process,
+    temperatureC
+  );
   const state = getExtractionState(E, input.roast);
 
   const styleHint: EspressoResult["styleHint"] =
