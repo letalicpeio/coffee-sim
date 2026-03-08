@@ -238,10 +238,9 @@ export default function SimulatorPage({
                         <button
                             type="button"
                             onClick={() => {
-                                setIsSwitchingLocale(true);
                                 const targetLocale = locale === "es" ? "en" : "es";
                                 const qs = searchParams.toString();
-                                router.push(`/${targetLocale}${qs ? `?${qs}` : ""}`);
+                                window.location.href = `/${targetLocale}${qs ? `?${qs}` : ""}`;
                             }}
                             className="rounded-full border border-neutral-800 bg-neutral-900/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
                         >
