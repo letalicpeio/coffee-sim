@@ -159,7 +159,7 @@ export default function SimulatorPage({
                             </>
                         ) : (
                             <>
-                                {dict.title} <span className="text-neutral-300">{dict.title2}</span>
+                                {dict.title} <span className="text-neutral-300">{dict.title2}{dict.title3}</span>
                             </>
                         )}
                     </h1>
@@ -328,7 +328,7 @@ export default function SimulatorPage({
                                 <FlavorRadar axes={result.axes} />
                             </div>
 
-                            <p className="mt-0 text-[11px] text-neutral-400 lg:mt-4 lg:text-xs">
+                            <p className="mt-0 text-[14px] text-neutral-400 lg:mt-4 lg:text-xs">
                                 {result.state === "Subextraído" && dict.state_sub}
                                 {result.state === "Balanceado" && dict.state_bal}
                                 {result.state === "Sobreextraído" && dict.state_over}
