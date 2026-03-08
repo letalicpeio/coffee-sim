@@ -38,12 +38,11 @@ export default function SimulatorPage({
     const [pressure, setPressure] = useState(9);
     const [waterGH, setWaterGH] = useState(6);
     const [waterKH, setWaterKH] = useState(3);
-    const [isSwitchingLocale, setIsSwitchingLocale] = useState(false);
 
     const doseG = 18;
 
     useEffect(() => {
-        if (isSwitchingLocale) return;
+        
         const g = searchParams.get("grind");
         const r = searchParams.get("ratio");
         const ro = searchParams.get("roast");
@@ -106,10 +105,10 @@ export default function SimulatorPage({
                 setUseWater(true);
             }
         }
-    }, [searchParams, isSwitchingLocale]);
+    }, [searchParams]);
 
     useEffect(() => {
-        if (isSwitchingLocale) return;
+        
         const qs = new URLSearchParams();
         qs.set("grind", String(grind));
         qs.set("ratio", ratio.toFixed(1));
@@ -151,9 +150,7 @@ export default function SimulatorPage({
         waterKH,
     ]);
 
-    useEffect(() => {
-        setIsSwitchingLocale(false);
-    }, [locale]);
+    
 
     const result = useMemo(
         () =>
