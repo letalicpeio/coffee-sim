@@ -19,17 +19,19 @@ type Axes = {
   
   export default function FlavorRadar({
     axes,
+    dict,
     size = 360,
   }: {
     axes: Axes;
+    dict: any;
     size?: number;
   }) {
     const labels: Array<[keyof Axes, string]> = [
-      ["acidez", "Acidez"],
-      ["dulzor", "Dulzor"],
-      ["amargor", "Amargor"],
-      ["astringencia", "Astringencia"],
-      ["cuerpo", "Cuerpo"],
+      ["acidez", dict.axis_acidity],
+      ["dulzor", dict.axis_sweetness],
+      ["amargor", dict.axis_bitterness],
+      ["astringencia", dict.axis_astringency],
+      ["cuerpo", dict.axis_body],
     ];
   
     const cx = size / 2;
@@ -74,7 +76,7 @@ type Axes = {
           viewBox={`0 0 ${size} ${size}`}
           className="w-full h-auto"
           role="img"
-          aria-label="Radar de sabor"
+          aria-label={dict.flavorRadar}
         >
           {/* Fondo */}
           <rect x="0" y="0" width={size} height={size} fill="transparent" />

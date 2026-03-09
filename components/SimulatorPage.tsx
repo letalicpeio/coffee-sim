@@ -42,7 +42,7 @@ export default function SimulatorPage({
     const doseG = 18;
 
     useEffect(() => {
-        
+
         const g = searchParams.get("grind");
         const r = searchParams.get("ratio");
         const ro = searchParams.get("roast");
@@ -108,7 +108,6 @@ export default function SimulatorPage({
     }, [searchParams]);
 
     useEffect(() => {
-        
         const qs = new URLSearchParams();
         qs.set("grind", String(grind));
         qs.set("ratio", ratio.toFixed(1));
@@ -150,7 +149,7 @@ export default function SimulatorPage({
         waterKH,
     ]);
 
-    
+
 
     const result = useMemo(
         () =>
@@ -369,15 +368,18 @@ export default function SimulatorPage({
                                     ratio={ratio}
                                     state={result.state}
                                     styleHint={result.styleHint}
+                                    temperatureC={advancedMode && useTemperature ? temperature : undefined}
+                                    pressureBar={advancedMode && usePressure ? pressure : undefined}
+                                    dict={dict}
                                 />
 
-                                <FlavorRadar axes={result.axes} />
+                                <FlavorRadar axes={result.axes} dict={dict} />
                             </div>
 
                             <p className="mt-2 text-[11px] text-neutral-400 lg:mt-4 lg:text-xs">
-                                {result.state === "Subextraído" && dict.state_sub}
-                                {result.state === "Balanceado" && dict.state_bal}
-                                {result.state === "Sobreextraído" && dict.state_over}
+                                {result.state === "Subextraído" && dict.state_desc_sub}
+                                {result.state === "Balanceado" && dict.state_desc_bal}
+                                {result.state === "Sobreextraído" && dict.state_desc_over}
                             </p>
                         </div>
 

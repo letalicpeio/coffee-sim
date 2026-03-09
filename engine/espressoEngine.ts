@@ -130,6 +130,7 @@ function computeSensoryProfile(
   roast: Roast,
   process: Process,
   temperatureC: number,
+  pressureBar: number,
   waterGH: number,
   waterKH: number
 ): FlavorAxes {
@@ -172,6 +173,10 @@ function computeSensoryProfile(
   const temperatureAcidityBias = (0.5 - tempN) * 8;
   const temperatureBitternessBias = (tempN - 0.5) * 10;
   const temperatureAstringencyBias = (tempN - 0.5) * 6;
+  const pressureN = (pressureBar - 6) / (10 - 6);
+  const pressureBodyBias = (pressureN - 0.5) * 8;
+  const pressureBitternessBias = (pressureN - 0.5) * 6;
+  const pressureAstringencyBias = (pressureN - 0.5) * 4;
   const ghN = (waterGH - 1) / (12 - 1);
   const khN = waterKH / 8;
   const waterBodyBias = (ghN - 0.5) * 8;
@@ -182,13 +187,18 @@ function computeSensoryProfile(
     75 - E * 0.8 + acidityBias + temperatureAcidityBias + waterAcidityBias
   );
   const bitterness = clamp(
-    (E - 50) * 1.1 + 25 + bitternessBias + temperatureBitternessBias
+    (E - 50) * 1.1 +
+      25 +
+      bitternessBias +
+      temperatureBitternessBias +
+      pressureBitternessBias
   );
   const astringency = clamp(
     (E - 55) * 1.15 +
-    18 +
-    astringencyBias +
-    temperatureAstringencyBias
+      18 +
+      astringencyBias +
+      temperatureAstringencyBias +
+      pressureAstringencyBias
   );
 
   const sweetnessBase = 15 + 70 * bell(E, 52, 18);
@@ -212,7 +222,9 @@ function computeSensoryProfile(
   );
 
   const ristrettoBoost = (1 - ratioN) * 14;
-  const body = clamp(25 + E * 0.55 + ristrettoBoost + bodyBias + waterBodyBias);
+  const body = clamp(
+    25 + E * 0.55 + ristrettoBoost + bodyBias + waterBodyBias + pressureBodyBias
+  );
 
   return {
     acidez: Math.round(acidity),
@@ -273,6 +285,7 @@ export function simulateEspresso(input: EspressoInputs): EspressoResult {
     input.roast,
     input.process,
     temperatureC,
+    pressureBar,
     waterGH,
     waterKH
   );

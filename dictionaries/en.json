@@ -12,9 +12,9 @@
   "flavorProfile": "Flavor profile",
   "extractionMap": "Extraction map",
   "estimatedExtraction": "Estimated extraction",
-  "state_sub": "You’ll likely get more pronounced acidity and a lighter body. Try grinding finer or slightly increasing the ratio.",
-  "state_bal": "Sweet spot: more sweetness and clarity in the cup.",
-  "state_over": "Bitterness or astringency may show up. Try grinding coarser or shortening the ratio.",
+  "state_desc_sub": "You’ll likely get more pronounced acidity and a lighter body. Try grinding finer or slightly increasing the ratio.",
+  "state_desc_bal": "Sweet spot: more sweetness and clarity in the cup.",
+  "state_desc_over": "Bitterness or astringency may show up. Try grinding coarser or shortening the ratio.",
   "note": "Note: This is an educational heuristic, not a physical measurement.",
   "lang_es": "ES",
   "lang_en": "EN",
@@ -67,5 +67,14 @@
   "process_honey": "honey",
   "state_under": "Underextracted",
   "state_balanced": "Balanced",
-  "state_over0": "Overextracted"
+  "state_over": "Overextracted",
+  "axis_acidity": "Acidity",
+  "axis_sweetness": "Sweetness",
+  "axis_bitterness": "Bitterness",
+  "axis_astringency": "Astringency",
+  "axis_body": "Body",
+  "axis_ratio": "Ratio (short → long)",
+  "axis_grind": "Grind (coarse → fine)",
+  "flavorRadar": "Flavor radar",
+  "zone": "Zone"
 }

@@ -12,9 +12,9 @@
   "flavorProfile": "Perfil sensorial",
   "extractionMap": "Mapa de extracción",
   "estimatedExtraction": "Extracción estimada",
-  "state_sub": "Probablemente percibirás acidez marcada y cuerpo ligero. Prueba moler más fino o alargar ligeramente el ratio.",
-  "state_bal": "Zona dulce de extracción: mayor dulzor y claridad en la taza.",
-  "state_over": "Probablemente aparecerá amargor o astringencia. Intenta moler más grueso o acortar el ratio.",
+  "state_desc_sub": "Probablemente percibirás acidez marcada y cuerpo ligero. Prueba moler más fino o alargar ligeramente el ratio.",
+  "state_desc_bal": "Zona dulce de extracción: mayor dulzor y claridad en la taza.",
+  "state_desc_over": "Probablemente aparecerá amargor o astringencia. Intenta moler más grueso o acortar el ratio.",
   "note": "Nota: Esto es una heurística educativa, no una medición física real.",
   "lang_es": "ES",
   "lang_en": "EN",
@@ -67,5 +67,14 @@
   "process_honey": "honey",
   "state_under": "Subextraído",
   "state_balanced": "Balanceado",
-  "state_over0": "Sobreextraído"
+  "state_over": "Sobreextraído",
+  "axis_acidity": "Acidez",
+  "axis_sweetness": "Dulzor",
+  "axis_bitterness": "Amargor",
+  "axis_astringency": "Astringencia",
+  "axis_body": "Cuerpo",
+  "axis_ratio": "Ratio (corto → largo)",
+  "axis_grind": "Molienda (gruesa → fina)",
+  "flavorRadar": "Radar de sabor",
+  "zone": "Zona"
 }

@@ -168,12 +168,13 @@ export default function SimulatorPage({
             waterKH,
         ]
     );
-    const stateLabel =
-        result.state === "Subextraído"
-            ? dict.state_under
-            : result.state === "Balanceado"
-                ? dict.state_balanced
-                : dict.state_over;
+    const stateLabels: Record<string, string> = {
+        Subextraído: dict.state_under,
+        Balanceado: dict.state_balanced,
+        Sobreextraído: dict.state_over,
+    };
+
+    const stateLabel = stateLabels[result.state] ?? result.state;
 
     return (
         <main className="min-h-screen bg-neutral-950 text-neutral-50">
@@ -366,15 +367,14 @@ export default function SimulatorPage({
                                     ratio={ratio}
                                     state={result.state}
                                     styleHint={result.styleHint}
+                                    dict={dict}
                                 />
 
-                                <FlavorRadar axes={result.axes} />
+                                <FlavorRadar axes={result.axes} dict={dict} />
                             </div>
 
                             <p className="mt-0 text-[14px] text-neutral-400 lg:mt-4 lg:text-xs">
-                                {result.state === "Subextraído" && dict.state_sub}
-                                {result.state === "Balanceado" && dict.state_bal}
-                                {result.state === "Sobreextraído" && dict.state_over}
+                            {stateLabel}
                             </p>
                         </div>
 
