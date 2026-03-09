@@ -45,7 +45,7 @@ export default function ExtractionMap({
 
   const shiftedX = clamp(x + xShift, 0, 1);
   const shiftedY = clamp(y + yShift, 0, 1);
-  
+
   const px = pad + shiftedX * (W - pad * 2);
   const py = pad + (1 - shiftedY) * (H - pad * 2); // y=1 (fino) arriba
 
@@ -65,40 +65,71 @@ export default function ExtractionMap({
 
   const stateLabel = stateLabels[state] ?? state;
 
+  const styleLabels: Record<string, string> = {
+    Ristretto: dict.style_ristretto,
+    Espresso: dict.style_espresso,
+    Lungo: dict.style_lungo,
+  };
+  
+  const styleLabel = styleHint ? styleLabels[styleHint] ?? styleHint : "";
+
   return (
     <div className="w-full">
       <div className="mb-2 flex items-center justify-between">
         <p className="text-sm text-neutral-300">{dict.extractionMap}</p>
         <p className="text-xs text-neutral-500">
-          {styleHint ? `≈ ${styleHint}` : ""}
+        {styleLabel ? `≈ ${styleLabel}` : ""}
         </p>
       </div>
 
       <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-3">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto">
+          <defs>
+            <linearGradient id="extractionZones" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="rgba(96,165,250,0.26)" />
+              <stop offset="45%" stopColor="rgba(167,243,208,0.26)" />
+              <stop offset="55%" stopColor="rgba(167,243,208,0.26)" />
+              <stop offset="100%" stopColor="rgba(248,113,113,0.26)" />
+            </linearGradient>
+          </defs>
+
           {/* Zonas (simple) */}
           {/* Subextraído: abajo-izquierda */}
-          <path
-            d={`M ${pad} ${H - pad} L ${W - pad} ${H - pad} L ${pad} ${pad} Z`}
-            fill="rgba(59,130,246,0.06)"
-          />
-          {/* Sobreextraído: arriba-derecha */}
-          <path
-            d={`M ${W - pad} ${pad} L ${W - pad} ${H - pad} L ${pad} ${pad} Z`}
-            fill="rgba(239,68,68,0.06)"
-          />
-          {/* Banda central “balanceado” (diagonal) */}
-          <path
-            d={`
-                M ${pad} ${H - pad * 1.2}
-                L ${pad} ${H - pad * 2.8}
-                L ${W - pad} ${pad * 2.8}
-                L ${W - pad} ${pad * 1.2}
-                Z
-              `}
-            fill="rgba(16,185,129,0.06)"
+
+          {/* //MAPA 1 Sustituir los path para ver el mapa 2 en degradado o comentar MAPA 1 y descomentar MAPA 2*/}
+          <rect
+            x={pad}
+            y={pad}
+            width={W - pad * 2}
+            height={H - pad * 2}
+            fill="url(#extractionZones)"
+            rx="8"
           />
 
+          <path
+            d={`
+            M ${pad} ${H - pad * 1.3}
+            L ${pad} ${H - pad * 2.7}
+            L ${W - pad} ${pad * 2.7}
+            L ${W - pad} ${pad * 1.3}
+            Z
+          `}
+            fill="rgba(255,255,255,0.05)"
+          />
+
+          {/* //MAPA2
+// Subextraído
+<path
+  d={`M ${pad} ${H - pad} L ${W - pad} ${H - pad} L ${pad} ${pad} Z`}
+  fill="rgba(96,165,250,0.10)"
+/>
+
+// Sobreextraído
+<path
+  d={`M ${W - pad} ${pad} L ${W - pad} ${H - pad} L ${pad} ${pad} Z`}
+  fill="rgba(248,113,113,0.10)"
+/>
+*/}
           {/* Marco */}
           <rect
             x={pad}

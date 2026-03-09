@@ -12,6 +12,21 @@ function fmtRatio(r: number) {
     return `1:${r.toFixed(1)}`;
 }
 
+type SavedRecipe = {
+    id: string;
+    name: string;
+    locale: "es" | "en";
+    grind: number;
+    ratio: number;
+    roast: Roast;
+    process: Process;
+    temperature?: number;
+    pressure?: number;
+    waterGH?: number;
+    waterKH?: number;
+    createdAt: string;
+};
+
 export default function SimulatorPage({
     dict,
     locale,
@@ -38,8 +53,12 @@ export default function SimulatorPage({
     const [pressure, setPressure] = useState(9);
     const [waterGH, setWaterGH] = useState(6);
     const [waterKH, setWaterKH] = useState(3);
-
     const doseG = 18;
+    const [showMapHelp, setShowMapHelp] = useState(false);
+    const [showRadarHelp, setShowRadarHelp] = useState(false);
+    const [savedRecipes, setSavedRecipes] = useState<SavedRecipe[]>([]);
+    const [saveMessage, setSaveMessage] = useState("");
+
 
     useEffect(() => {
 
@@ -106,6 +125,20 @@ export default function SimulatorPage({
             }
         }
     }, [searchParams]);
+
+    useEffect(() => {
+        const raw = window.localStorage.getItem("coffee-sim-recipes");
+        if (!raw) return;
+
+        try {
+            const parsed = JSON.parse(raw) as SavedRecipe[];
+            if (Array.isArray(parsed)) {
+                setSavedRecipes(parsed);
+            }
+        } catch {
+            console.error("No se pudieron leer las recetas guardadas");
+        }
+    }, []);
 
     useEffect(() => {
         const qs = new URLSearchParams();
@@ -188,6 +221,65 @@ export default function SimulatorPage({
                 ? dict.state_balanced
                 : dict.state_over0;
 
+    const handleSaveRecipe = () => {
+        const trimmedName = recipeName.trim();
+
+        if (!trimmedName) {
+            setSaveMessage(locale === "es" ? "Pon un nombre a la receta" : "Add a recipe name");
+            window.setTimeout(() => setSaveMessage(""), 2000);
+            return;
+        }
+
+        const newRecipe: SavedRecipe = {
+            id: crypto.randomUUID(),
+            name: trimmedName,
+            locale,
+            grind,
+            ratio,
+            roast,
+            process,
+            temperature: advancedMode && useTemperature ? temperature : undefined,
+            pressure: advancedMode && usePressure ? pressure : undefined,
+            waterGH: advancedMode && useWater ? waterGH : undefined,
+            waterKH: advancedMode && useWater ? waterKH : undefined,
+            createdAt: new Date().toISOString(),
+        };
+
+        const updatedRecipes = [newRecipe, ...savedRecipes];
+        setSavedRecipes(updatedRecipes);
+        window.localStorage.setItem("coffee-sim-recipes", JSON.stringify(updatedRecipes));
+
+        setSaveMessage(locale === "es" ? "Receta guardada" : "Recipe saved");
+        window.setTimeout(() => setSaveMessage(""), 2000);
+    };
+    const styleLabels: Record<string, string> = {
+        Ristretto: dict.style_ristretto,
+        Espresso: dict.style_espresso,
+        Lungo: dict.style_lungo,
+    };
+
+    const roastLabels: Record<string, string> = {
+        claro: dict.roast_light,
+        medio: dict.roast_medium,
+        oscuro: dict.roast_dark,
+    };
+
+    const processLabels: Record<string, string> = {
+        lavado: dict.process_washed,
+        natural: dict.process_natural,
+        honey: dict.process_honey,
+    };
+    const stateDescriptions: Record<string, string> = {
+        Subextraído: dict.state_desc_sub,
+        Balanceado: dict.state_desc_bal,
+        Sobreextraído: dict.state_desc_over,
+    };
+
+    const stateDescription = stateDescriptions[result.state] ?? "";
+    const roastLabel = roastLabels[roast] ?? roast;
+    const processLabel = processLabels[process] ?? process;
+
+    const styleLabel = styleLabels[result.styleHint] ?? result.styleHint;
     return (
         <main className="min-h-screen bg-neutral-950 text-neutral-50">
             <section className="mx-auto max-w-screen-2xl px-6 pt-16 pb-10">
@@ -268,7 +360,7 @@ export default function SimulatorPage({
                                     <span className="text-neutral-200">{stateLabel}</span>
                                     <span className="text-neutral-500"> · </span>
                                     {dict.styleLabel}:{" "}
-                                    <span className="text-neutral-200">{result.styleHint}</span>
+                                    <span className="text-neutral-200">{styleLabel}</span>
                                 </p>
 
                                 <p className="mt-2 text-xs text-neutral-500">
@@ -311,20 +403,15 @@ export default function SimulatorPage({
 
                                     <button
                                         type="button"
-                                        onClick={() => {
-                                            const qs = new URLSearchParams(searchParams.toString());
-                                            if (recipeName.trim()) {
-                                                qs.set("name", recipeName.trim());
-                                            } else {
-                                                qs.delete("name");
-                                            }
-                                            router.push(`/${locale}?${qs.toString()}`);
-                                        }}
+                                        onClick={handleSaveRecipe}
                                         className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
                                     >
                                         {dict.save}
                                     </button>
                                 </div>
+                                {saveMessage && (
+                                    <p className="mt-2 text-[11px] text-neutral-400">{saveMessage}</p>
+                                )}
                             </div>
                         </div>
 
@@ -334,7 +421,7 @@ export default function SimulatorPage({
                                     <div>
                                         <p className="text-sm font-semibold text-neutral-100">{recipeName}</p>
                                         <p className="mt-1 text-xs text-neutral-400">
-                                            {result.styleHint} · {roast} · {process}
+                                            {styleLabel} · {roastLabel} · {processLabel}
                                         </p>
                                     </div>
 
@@ -342,7 +429,7 @@ export default function SimulatorPage({
                                         <p className="text-xs text-neutral-400">
                                             {doseG}g → {result.beverageG}g ({fmtRatio(ratio)})
                                         </p>
-                                        <p className="mt-1 text-xs text-neutral-300">{result.state}</p>
+                                        <p className="mt-1 text-xs text-neutral-300">{stateLabel}</p>
                                     </div>
                                 </div>
                             </div>
@@ -362,24 +449,68 @@ export default function SimulatorPage({
                                 </div>
                             </div>
 
-                            <div className="mt-6 space-y-4 lg:grid lg:h-96 lg:grid-cols-2 lg:gap-6 lg:space-y-0">
-                                <ExtractionMap
-                                    grind={grind}
-                                    ratio={ratio}
-                                    state={result.state}
-                                    styleHint={result.styleHint}
-                                    temperatureC={advancedMode && useTemperature ? temperature : undefined}
-                                    pressureBar={advancedMode && usePressure ? pressure : undefined}
-                                    dict={dict}
-                                />
+                            <div className="mt-6 space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
+                                <div className="flex flex-col">
+                                    <div className="mb-2 flex items-center justify-between">
+                                        <span className="text-xs text-neutral-500">{dict.mapHelpLabel}</span>
 
-                                <FlavorRadar axes={result.axes} dict={dict} />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowMapHelp(!showMapHelp)}
+                                            className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
+                                        >
+                                            {showMapHelp ? dict.mapHelpHide : dict.mapHelpShow}
+                                        </button>
+                                    </div>
+
+                                    {showMapHelp && (
+                                        <div className="mb-4 rounded-xl border border-neutral-800 bg-neutral-950/40 p-4 text-xs text-neutral-300">
+                                            <p>{dict.mapHelpP1}</p>
+                                            <p className="mt-2">{dict.mapHelpP2}</p>
+                                            <p className="mt-2">{dict.mapHelpP3}</p>
+                                            <p className="mt-2">{dict.mapHelpP4}</p>
+                                        </div>
+                                    )}
+
+                                    <ExtractionMap
+                                        grind={grind}
+                                        ratio={ratio}
+                                        state={result.state}
+                                        styleHint={result.styleHint}
+                                        temperatureC={advancedMode && useTemperature ? temperature : undefined}
+                                        pressureBar={advancedMode && usePressure ? pressure : undefined}
+                                        dict={dict}
+                                    />
+                                </div>
+
+                                <div className="flex flex-col">
+                                    <div className="mb-2 flex items-center justify-between">
+                                        <span className="text-xs text-neutral-500">{dict.radarHelpLabel}</span>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowRadarHelp(!showRadarHelp)}
+                                            className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
+                                        >
+                                            {showRadarHelp ? dict.radarHelpHide : dict.radarHelpShow}
+                                        </button>
+                                    </div>
+
+                                    {showRadarHelp && (
+                                        <div className="mb-4 rounded-xl border border-neutral-800 bg-neutral-950/40 p-4 text-xs text-neutral-300">
+                                            <p>{dict.radarHelpP1}</p>
+                                            <p className="mt-2">{dict.radarHelpP2}</p>
+                                            <p className="mt-2">{dict.radarHelpP3}</p>
+                                            <p className="mt-2">{dict.radarHelpP4}</p>
+                                        </div>
+                                    )}
+
+                                    <FlavorRadar axes={result.axes} dict={dict} />
+                                </div>
                             </div>
 
                             <p className="mt-2 text-[11px] text-neutral-400 lg:mt-4 lg:text-xs">
-                                {result.state === "Subextraído" && dict.state_desc_sub}
-                                {result.state === "Balanceado" && dict.state_desc_bal}
-                                {result.state === "Sobreextraído" && dict.state_desc_over}
+                                {stateDescription}
                             </p>
                         </div>
 
@@ -545,7 +676,7 @@ export default function SimulatorPage({
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm font-medium">{dict.coffeeType}</span>
                                     <span className="text-xs text-neutral-500">
-                                        {roast} · {process}
+                                        {roastLabel} · {processLabel}
                                     </span>
                                 </div>
 
@@ -659,6 +790,72 @@ export default function SimulatorPage({
                                     </div>
                                 </div>
                             )}
+                            <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-sm font-medium">
+                                        {locale === "es" ? "Recetas guardadas" : "Saved recipes"}
+                                    </p>
+                                    <span className="text-xs text-neutral-500">{savedRecipes.length}</span>
+                                </div>
+
+                                {savedRecipes.length === 0 ? (
+                                    <p className="mt-3 text-xs text-neutral-500">
+                                        {locale === "es"
+                                            ? "Aún no has guardado ninguna receta."
+                                            : "You haven't saved any recipes yet."}
+                                    </p>
+                                ) : (
+                                    <div className="mt-3 space-y-2">
+                                        {savedRecipes.slice(0, 5).map((recipe) => (
+                                            <div
+                                                key={recipe.id}
+                                                className="rounded-lg border border-neutral-800 bg-neutral-900/50 px-3 py-2"
+                                            >
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <div>
+                                                        <p className="text-xs font-medium text-neutral-200">
+                                                            {recipe.name}
+                                                        </p>
+                                                        <p className="mt-1 text-[11px] text-neutral-500">
+                                                            {recipe.grind}/100 · 1:{recipe.ratio.toFixed(1)} · {recipe.roast} · {recipe.process}
+                                                        </p>
+                                                    </div>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const qs = new URLSearchParams();
+                                                            qs.set("grind", String(recipe.grind));
+                                                            qs.set("ratio", recipe.ratio.toFixed(1));
+                                                            qs.set("roast", recipe.roast);
+                                                            qs.set("process", recipe.process);
+                                                            qs.set("name", recipe.name);
+
+                                                            if (recipe.temperature !== undefined) {
+                                                                qs.set("temperature", String(recipe.temperature));
+                                                            }
+                                                            if (recipe.pressure !== undefined) {
+                                                                qs.set("pressure", String(recipe.pressure));
+                                                            }
+                                                            if (recipe.waterGH !== undefined) {
+                                                                qs.set("waterGH", String(recipe.waterGH));
+                                                            }
+                                                            if (recipe.waterKH !== undefined) {
+                                                                qs.set("waterKH", String(recipe.waterKH));
+                                                            }
+
+                                                            router.push(`/${locale}?${qs.toString()}`);
+                                                        }}
+                                                        className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-[11px] text-neutral-200 hover:bg-neutral-900"
+                                                    >
+                                                        {locale === "es" ? "Cargar" : "Load"}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

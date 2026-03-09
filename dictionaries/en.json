@@ -76,5 +76,22 @@
   "axis_ratio": "Ratio (short → long)",
   "axis_grind": "Grind (coarse → fine)",
   "flavorRadar": "Flavor radar",
-  "zone": "Zone"
+  "zone": "Zone",
+  "mapHelpLabel": "Map help",
+  "mapHelpShow": "How to read it?",
+  "mapHelpHide": "Hide",
+  "mapHelpP1": "The horizontal axis represents ratio and the vertical axis represents grind. The dot shows where your recipe lands.",
+  "mapHelpP2": "Blue indicates underextraction tendency, green the balanced zone, and red overextraction tendency.",
+  "mapHelpP3": "Finer grind usually moves the recipe toward higher extraction. Coarser grind toward lower extraction. A longer ratio shifts the point to the right.",
+  "mapHelpP4": "Temperature and pressure act as secondary adjustments and slightly shift the point.",
+  "radarHelpLabel": "Radar help",
+  "radarHelpShow": "How to interpret it?",
+  "radarHelpHide": "Hide",
+  "radarHelpP1": "The radar summarizes the estimated sensory profile of the recipe across five axes: acidity, sweetness, bitterness, astringency, and body.",
+  "radarHelpP2": "A higher value does not necessarily mean better: it indicates a stronger presence of that attribute in the cup.",
+  "radarHelpP3": "Underextracted recipes usually show more acidity and less body. Overextracted ones tend to increase bitterness and astringency.",
+  "radarHelpP4": "Roast, process, temperature, pressure, and water modify the final profile in addition to grind and ratio.",
+  "style_ristretto": "Ristretto",
+  "style_espresso": "Espresso",
+  "style_lungo": "Lungo"
 }

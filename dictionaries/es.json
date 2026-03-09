@@ -76,5 +76,22 @@
   "axis_ratio": "Ratio (corto → largo)",
   "axis_grind": "Molienda (gruesa → fina)",
   "flavorRadar": "Radar de sabor",
-  "zone": "Zona"
+  "zone": "Zona",
+  "mapHelpLabel": "Ayuda del mapa",
+  "mapHelpShow": "¿Cómo leerlo?",
+  "mapHelpHide": "Ocultar",
+  "mapHelpP1": "El eje horizontal representa el ratio y el vertical la molienda. El punto muestra dónde cae tu receta.",
+  "mapHelpP2": "Azul indica tendencia a subextracción, verde zona de equilibrio y rojo tendencia a sobreextracción.",
+  "mapHelpP3": "Más fino suele mover la receta hacia mayor extracción. Más grueso, hacia menor extracción. Un ratio más largo desplaza el punto hacia la derecha.",
+  "mapHelpP4": "Temperatura y presión actúan como ajustes secundarios y desplazan ligeramente el punto.",
+  "radarHelpLabel": "Ayuda del radar",
+  "radarHelpShow": "¿Cómo interpretarlo?",
+  "radarHelpHide": "Ocultar",
+  "radarHelpP1": "El radar resume el perfil sensorial estimado de la receta en cinco ejes: acidez, dulzor, amargor, astringencia y cuerpo.",
+  "radarHelpP2": "Un valor más alto no significa necesariamente mejor: indica más presencia de ese atributo en la taza.",
+  "radarHelpP3": "Las recetas subextraídas suelen mostrar más acidez y menos cuerpo. Las sobreextraídas tienden a subir amargor y astringencia.",
+  "radarHelpP4": "Tueste, proceso, temperatura, presión y agua modifican el perfil final además de la molienda y el ratio.",
+  "style_ristretto": "Ristretto",
+  "style_espresso": "Espresso",
+  "style_lungo": "Lungo"
 }
