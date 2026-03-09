@@ -93,5 +93,22 @@
   "radarHelpP4": "Tueste, proceso, temperatura, presión y agua modifican el perfil final además de la molienda y el ratio.",
   "style_ristretto": "Ristretto",
   "style_espresso": "Espresso",
-  "style_lungo": "Lungo"
+  "style_lungo": "Lungo",
+  "savedRecipes": "Recetas guardadas",
+  "noSavedRecipes": "Aún no has guardado ninguna receta.",
+  "loadRecipe": "Cargar",
+  "deleteRecipe": "Borrar",
+  "clearAllRecipes": "Limpiar todo",
+  "saveRecipeNeedName": "Pon un nombre a la receta",
+  "recipeSaved": "Receta guardada",
+  "engineExplain": "¿Cómo funciona el modelo de simulación?",
+  "engineHide": "Ocultar explicación",
+  "engineInfo1": "Coffee-sim utiliza un modelo heurístico de extracción diseñado para aproximar cómo interactúan las variables de preparación de espresso. El motor transforma los parámetros de la receta en un espacio normalizado y calcula un índice de extracción estimada entre 0 y 100.",
+  "engineInfo2": "Las variables principales del modelo son molienda y ratio. La molienda actúa como un modificador directo de la superficie de contacto y de la resistencia hidráulica del lecho de café, mientras que el ratio controla la cantidad relativa de solubles extraídos. Ambas variables determinan el eje principal de la extracción.",
+  "engineInfo3": "Sobre este eje base se aplican moduladores dependientes del café. El nivel de tueste introduce sesgos estructurales en la facilidad de extracción: los tuestes claros penalizan la subextracción y desplazan el equilibrio hacia mayor acidez, mientras que los tuestes oscuros aumentan la tendencia al amargor y al cuerpo.",
+  "engineInfo4": "El proceso del café actúa como un modulador sensorial adicional. Los cafés lavados incrementan la claridad y la percepción de acidez, los naturales refuerzan dulzor y cuerpo, y los honey introducen un perfil intermedio. Estos ajustes se aplican como pesos sobre los ejes sensoriales finales.",
+  "engineInfo5": "Los parámetros avanzados modifican el equilibrio del sistema. La temperatura altera la eficiencia de extracción térmica y desplaza la extracción estimada hacia perfiles más amargos o más ácidos. La presión modifica la dinámica de flujo del espresso, afectando indirectamente al rendimiento de extracción.",
+  "engineInfo6": "A partir de la extracción estimada, el motor proyecta el resultado en cinco ejes sensoriales: acidez, dulzor, amargor, astringencia y cuerpo. Estos ejes se calculan mediante funciones no lineales que modelan el comportamiento típico observado en la extracción del café.",
+  "engineInfo7": "El resultado final es una representación sensorial probabilística. El modelo no intenta reproducir la física completa del espresso, sino capturar las relaciones dominantes entre variables de preparación y percepción en taza.",
+  "engineInfo8": "Los pesos del modelo fueron calibrados mediante literatura de extracción, experiencia barista y procesos iterativos de ajuste asistidos por inteligencia artificial para aproximar patrones sensoriales realistas."
 }

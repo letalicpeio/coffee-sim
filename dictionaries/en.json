@@ -93,5 +93,22 @@
   "radarHelpP4": "Roast, process, temperature, pressure, and water modify the final profile in addition to grind and ratio.",
   "style_ristretto": "Ristretto",
   "style_espresso": "Espresso",
-  "style_lungo": "Lungo"
+  "style_lungo": "Lungo",
+  "savedRecipes": "Saved recipes",
+  "noSavedRecipes": "You haven't saved any recipes yet.",
+  "loadRecipe": "Load",
+  "deleteRecipe": "Delete",
+  "clearAllRecipes": "Clear all",
+  "saveRecipeNeedName": "Add a recipe name",
+  "recipeSaved": "Recipe saved",
+  "engineExplain": "How does the simulation model work?",
+  "engineHide": "Hide explanation",
+  "engineInfo1": "Coffee-sim uses a heuristic extraction model designed to approximate how espresso brewing variables interact. The engine transforms recipe parameters into a normalized space and computes an estimated extraction index between 0 and 100.",
+  "engineInfo2": "The primary drivers of the model are grind size and brew ratio. Grind acts as a modifier of contact surface and hydraulic resistance of the coffee bed, while ratio controls the relative amount of dissolved solids extracted. Together they define the main extraction axis.",
+  "engineInfo3": "On top of this base axis, coffee-dependent modulators are applied. Roast level introduces structural biases in extraction ease: light roasts penalize underextraction and emphasize acidity, while darker roasts increase the tendency toward bitterness and body.",
+  "engineInfo4": "Coffee processing method acts as an additional sensory modulator. Washed coffees increase clarity and perceived acidity, natural processes reinforce sweetness and body, and honey processes sit between both profiles. These effects are applied as weighted adjustments on the final sensory axes.",
+  "engineInfo5": "Advanced parameters alter the system balance. Temperature changes thermal extraction efficiency and shifts the extraction toward more bitter or more acidic profiles. Pressure modifies espresso flow dynamics, indirectly affecting extraction yield.",
+  "engineInfo6": "From the estimated extraction value, the engine projects the result onto five sensory axes: acidity, sweetness, bitterness, astringency and body. These axes are computed using non-linear response curves modeling typical coffee extraction behavior.",
+  "engineInfo7": "The final output is a probabilistic sensory representation. The model does not attempt to reproduce the full physics of espresso, but instead captures the dominant relationships between brewing variables and cup perception.",
+  "engineInfo8": "Model weights were calibrated using extraction theory, barista experience and iterative tuning assisted by artificial intelligence."
 }

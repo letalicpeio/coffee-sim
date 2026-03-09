@@ -58,6 +58,7 @@ export default function SimulatorPage({
     const [showRadarHelp, setShowRadarHelp] = useState(false);
     const [savedRecipes, setSavedRecipes] = useState<SavedRecipe[]>([]);
     const [saveMessage, setSaveMessage] = useState("");
+    const [showEngineInfo, setShowEngineInfo] = useState(false);
 
 
     useEffect(() => {
@@ -225,7 +226,7 @@ export default function SimulatorPage({
         const trimmedName = recipeName.trim();
 
         if (!trimmedName) {
-            setSaveMessage(locale === "es" ? "Pon un nombre a la receta" : "Add a recipe name");
+            setSaveMessage(dict.saveRecipeNeedName);
             window.setTimeout(() => setSaveMessage(""), 2000);
             return;
         }
@@ -515,6 +516,108 @@ export default function SimulatorPage({
                         </div>
 
                         <p className="mt-6 text-xs text-neutral-500">{dict.note}</p>
+                        <button
+                            type="button"
+                            onClick={() => setShowEngineInfo(!showEngineInfo)}
+                            className="mt-2 rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
+                        >
+                            {showEngineInfo ? dict.engineHide : dict.engineExplain}
+                        </button>
+                        {showEngineInfo && (
+                            <div className="mt-4 rounded-xl border border-neutral-800 bg-neutral-950/40 p-4 text-xs text-neutral-300">
+                                <div className="mb-4 grid grid-cols-2 gap-2 text-[10px] text-neutral-400 sm:grid-cols-4">
+                                    <div className="rounded-lg border border-neutral-800 bg-neutral-950/50 px-2 py-1.5 text-center">
+                                        <p className="text-neutral-200">8</p>
+                                        <p>{locale === "es" ? "variables" : "variables"}</p>
+                                    </div>
+
+                                    <div className="rounded-lg border border-neutral-800 bg-neutral-950/50 px-2 py-1.5 text-center">
+                                        <p className="text-neutral-200">5</p>
+                                        <p>{locale === "es" ? "ejes sensoriales" : "sensory axes"}</p>
+                                    </div>
+
+                                    <div className="rounded-lg border border-neutral-800 bg-neutral-950/50 px-2 py-1.5 text-center">
+                                        <p className="text-neutral-200">0–100</p>
+                                        <p>{locale === "es" ? "índice extracción" : "extraction index"}</p>
+                                    </div>
+
+                                    <div className="rounded-lg border border-neutral-800 bg-neutral-950/50 px-2 py-1.5 text-center">
+                                        <p className="text-neutral-200">AI</p>
+                                        <p>{locale === "es" ? "ajuste iterativo" : "iterative tuning"}</p>
+                                    </div>
+                                </div>
+                                <div className="mb-4 flex items-start justify-between gap-3">
+                                    <div>
+                                        <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-500">
+                                            {locale === "es" ? "Simulation Engine" : "Simulation Engine"}
+                                        </p>
+                                        <p className="mt-1 text-sm font-medium text-neutral-100">
+                                            {locale === "es" ? "Descripción técnica" : "Technical overview"}
+                                        </p>
+                                    </div>
+
+                                    <span className="rounded-full border border-neutral-800 bg-neutral-900/60 px-2.5 py-1 text-[10px] uppercase tracking-wide text-neutral-300">
+                                        {locale === "es" ? "Heuristic model v1" : "Heuristic model v1"}
+                                    </span>
+                                </div>
+                                <div className="space-y-3 text-[11px] leading-relaxed">
+                                    <div>
+                                        <p className="font-medium text-neutral-200">
+                                            {locale === "es" ? "Input normalization" : "Input normalization"}
+                                        </p>
+                                        <p className="text-neutral-400">{dict.engineInfo1}</p>
+                                    </div>
+
+                                    <div>
+                                        <p className="font-medium text-neutral-200">
+                                            {locale === "es" ? "Primary extraction drivers" : "Primary extraction drivers"}
+                                        </p>
+                                        <p className="text-neutral-400">{dict.engineInfo2}</p>
+                                    </div>
+
+                                    <div>
+                                        <p className="font-medium text-neutral-200">
+                                            {locale === "es" ? "Coffee-dependent modulators" : "Coffee-dependent modulators"}
+                                        </p>
+                                        <p className="text-neutral-400">{dict.engineInfo3}</p>
+                                    </div>
+
+                                    <div>
+                                        <p className="font-medium text-neutral-200">
+                                            {locale === "es" ? "Advanced parameters" : "Advanced parameters"}
+                                        </p>
+                                        <p className="text-neutral-400">{dict.engineInfo4}</p>
+                                    </div>
+
+                                    <div>
+                                        <p className="font-medium text-neutral-200">
+                                            {locale === "es" ? "Sensory projection" : "Sensory projection"}
+                                        </p>
+                                        <p className="text-neutral-400">{dict.engineInfo5}</p>
+                                    </div>
+                                    <div>
+                                        <p className="font-medium text-neutral-200">
+                                            {locale === "es" ? "Sensory projection" : "Sensory projection"}
+                                        </p>
+                                        <p className="text-neutral-400">{dict.engineInfo6}</p>
+                                    </div>
+
+                                    <div>
+                                        <p className="font-medium text-neutral-200">
+                                            {locale === "es" ? "Probabilistic output model" : "Probabilistic output model"}
+                                        </p>
+                                        <p className="text-neutral-400">{dict.engineInfo7}</p>
+                                    </div>
+
+                                    <div>
+                                        <p className="font-medium text-neutral-200">
+                                            {locale === "es" ? "AI-assisted calibration" : "AI-assisted calibration"}
+                                        </p>
+                                        <p className="text-neutral-400">{dict.engineInfo8}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Controles */}
@@ -791,22 +894,36 @@ export default function SimulatorPage({
                                 </div>
                             )}
                             <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between gap-3">
                                     <p className="text-sm font-medium">
-                                        {locale === "es" ? "Recetas guardadas" : "Saved recipes"}
+                                        {dict.savedRecipes}
                                     </p>
-                                    <span className="text-xs text-neutral-500">{savedRecipes.length}</span>
+
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs text-neutral-500">{savedRecipes.length}</span>
+
+                                        {savedRecipes.length > 0 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setSavedRecipes([]);
+                                                    window.localStorage.removeItem("coffee-sim-recipes");
+                                                }}
+                                                className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-[11px] text-neutral-200 hover:bg-neutral-900"
+                                            >
+                                                {dict.clearAllRecipes}
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {savedRecipes.length === 0 ? (
                                     <p className="mt-3 text-xs text-neutral-500">
-                                        {locale === "es"
-                                            ? "Aún no has guardado ninguna receta."
-                                            : "You haven't saved any recipes yet."}
+                                        {dict.noSavedRecipes}
                                     </p>
                                 ) : (
-                                    <div className="mt-3 space-y-2">
-                                        {savedRecipes.slice(0, 5).map((recipe) => (
+                                    <div className="mt-3 max-h-72 space-y-2 overflow-y-auto pr-1">
+                                        {savedRecipes.map((recipe) => (
                                             <div
                                                 key={recipe.id}
                                                 className="rounded-lg border border-neutral-800 bg-neutral-900/50 px-3 py-2"
@@ -848,7 +965,18 @@ export default function SimulatorPage({
                                                         }}
                                                         className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-[11px] text-neutral-200 hover:bg-neutral-900"
                                                     >
-                                                        {locale === "es" ? "Cargar" : "Load"}
+                                                        {dict.loadRecipe}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const updated = savedRecipes.filter((r) => r.id !== recipe.id);
+                                                            setSavedRecipes(updated);
+                                                            window.localStorage.setItem("coffee-sim-recipes", JSON.stringify(updated));
+                                                        }}
+                                                        className="ml-2 rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-[11px] text-neutral-200 hover:bg-neutral-900"
+                                                    >
+                                                        {dict.deleteRecipe}
                                                     </button>
                                                 </div>
                                             </div>
