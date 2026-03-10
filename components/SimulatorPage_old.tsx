@@ -7,6 +7,7 @@ import { simulateEspresso, type Process, type Roast } from "../engine/espressoEn
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import type { Dict } from "../lib/getDictionary";
+import HybridRadarMap from "./HybridRadarMap"
 
 function fmtRatio(r: number) {
     return `1:${r.toFixed(1)}`;
@@ -634,7 +635,7 @@ export default function SimulatorPage({
                             </button>
                         </div>
 
-                        <p className="mt-1 text-sm text-neutral-400">{dict.controlsDescription}</p>
+                        <p className=" mt-1 text-sm text-neutral-400">{dict.controlsDescription}</p>
 
                         <div className="mt-6 space-y-5">
                             {/* Molienda */}

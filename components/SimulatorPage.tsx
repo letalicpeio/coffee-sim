@@ -374,13 +374,7 @@ export default function SimulatorPage({
                             </div>
 
                             <div className="flex flex-col items-end gap-2">
-                                <span className="rounded-full border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200">
-                                    {doseG}g → {result.beverageG}g ({fmtRatio(ratio)})
-                                </span>
 
-                                <p className="text-xs text-neutral-400">
-                                    {dict.estimatedTime}: {result.estimatedTimeS}s
-                                </p>
 
                                 <button
                                     type="button"
@@ -440,24 +434,36 @@ export default function SimulatorPage({
 
                         <div className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
                             <div className="flex items-start justify-between gap-4">
-                                <div>
+                                <div className="min-w-0">
                                     <p className="text-sm text-neutral-300">{dict.flavorProfile}</p>
                                     <p className="mt-1 text-xs text-neutral-500">{dict.axesLabel}</p>
                                 </div>
-                                <div className="text-right">
-                                    <p className="text-xs text-neutral-400">{dict.estimatedExtraction}</p>
-                                    <p className="text-sm text-neutral-200">
-                                        {Math.round(result.extraction)}/100
-                                    </p>
+
+                                <div className="ml-auto flex items-start gap-8 text-right">
+                                    <div>
+                                        <p className="text-xs text-neutral-400">{dict.estimatedExtraction}</p>
+                                        <p className="text-sm text-neutral-200">
+                                            {Math.round(result.extraction)}/100
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-xs text-neutral-300">
+                                            {doseG}g → {result.beverageG}g ({fmtRatio(ratio)})
+                                        </p>
+                                        <p className="mt-1 text-xs text-neutral-400">
+                                            {dict.estimatedTime}: {result.estimatedTimeS}s
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="mt-6">
+                            <div className="mt-2">
                                 {/* mobile */}
                                 <div className="lg:hidden">
-                                    <div className="mb-2 flex items-center justify-between">
+                                    <div className="mb-2 flex items-center gap-3">
                                         <span className="text-xs text-neutral-500">
-                                            {dict.mapHelpLabel} + {dict.radarHelpLabel}
+                                            {dict.hybridHelpLabel}
                                         </span>
 
                                         <button
@@ -465,7 +471,7 @@ export default function SimulatorPage({
                                             onClick={() => setShowHybridHelp(!showHybridHelp)}
                                             className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
                                         >
-                                            {showHybridHelp ? dict.mapHelpHide : dict.mapHelpShow}
+                                            {showHybridHelp ? dict.hybridHelpHide : dict.hybridHelpShow}
                                         </button>
                                     </div>
 
@@ -560,11 +566,11 @@ export default function SimulatorPage({
                                 {stateDescription}
                             </p>
                         </div>
-                        <p className="mt-6 text-xs text-neutral-500">{dict.note}</p>
+                        <p className="hidden lg:block mt-6 text-xs text-neutral-500">{dict.note}</p>
                         <button
                             type="button"
                             onClick={() => setShowEngineInfo(!showEngineInfo)}
-                            className="mt-2 rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
+                            className="hidden lg:block mt-2 rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
                         >
                             {showEngineInfo ? dict.engineHide : dict.engineExplain}
                         </button>
@@ -679,7 +685,7 @@ export default function SimulatorPage({
                             </button>
                         </div>
 
-                        <p className="mt-1 text-sm text-neutral-400">{dict.controlsDescription}</p>
+                        <p className="hidden lg:block mt-1 text-sm text-neutral-400">{dict.controlsDescription}</p>
 
                         <div className="mt-6 space-y-5">
                             {/* Molienda */}
