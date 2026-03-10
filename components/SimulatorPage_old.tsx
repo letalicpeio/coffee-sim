@@ -7,7 +7,6 @@ import { simulateEspresso, type Process, type Roast } from "../engine/espressoEn
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import type { Dict } from "../lib/getDictionary";
-import HybridRadarMap from "./HybridRadarMap"
 
 function fmtRatio(r: number) {
     return `1:${r.toFixed(1)}`;
@@ -60,7 +59,6 @@ export default function SimulatorPage({
     const [savedRecipes, setSavedRecipes] = useState<SavedRecipe[]>([]);
     const [saveMessage, setSaveMessage] = useState("");
     const [showEngineInfo, setShowEngineInfo] = useState(false);
-    const [showHybridHelp, setShowHybridHelp] = useState(false);
 
 
     useEffect(() => {
@@ -452,32 +450,55 @@ export default function SimulatorPage({
                                 </div>
                             </div>
 
-                            <div className="mt-6">
-                                {/* mobile */}
-                                <div className="lg:hidden">
+                            <div className="mt-6 space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
+                                <div className="flex flex-col">
                                     <div className="mb-2 flex items-center justify-between">
-                                        <span className="text-xs text-neutral-500">
-                                            {dict.mapHelpLabel} + {dict.radarHelpLabel}
-                                        </span>
+                                        <span className="text-xs text-neutral-500">{dict.mapHelpLabel}</span>
 
                                         <button
                                             type="button"
-                                            onClick={() => setShowHybridHelp(!showHybridHelp)}
+                                            onClick={() => setShowMapHelp(!showMapHelp)}
                                             className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
                                         >
-                                            {showHybridHelp ? dict.mapHelpHide : dict.mapHelpShow}
+                                            {showMapHelp ? dict.mapHelpHide : dict.mapHelpShow}
                                         </button>
                                     </div>
 
-                                    {showHybridHelp && (
+                                    {showMapHelp && (
                                         <div className="mb-4 rounded-xl border border-neutral-800 bg-neutral-950/40 p-4 text-xs text-neutral-300">
                                             <p>{dict.mapHelpP1}</p>
                                             <p className="mt-2">{dict.mapHelpP2}</p>
                                             <p className="mt-2">{dict.mapHelpP3}</p>
                                             <p className="mt-2">{dict.mapHelpP4}</p>
+                                        </div>
+                                    )}
 
-                                            <div className="my-3 border-t border-neutral-800" />
+                                    <ExtractionMap
+                                        grind={grind}
+                                        ratio={ratio}
+                                        state={result.state}
+                                        styleHint={result.styleHint}
+                                        temperatureC={advancedMode && useTemperature ? temperature : undefined}
+                                        pressureBar={advancedMode && usePressure ? pressure : undefined}
+                                        dict={dict}
+                                    />
+                                </div>
 
+                                <div className="flex flex-col">
+                                    <div className="mb-2 flex items-center justify-between">
+                                        <span className="text-xs text-neutral-500">{dict.radarHelpLabel}</span>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowRadarHelp(!showRadarHelp)}
+                                            className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
+                                        >
+                                            {showRadarHelp ? dict.radarHelpHide : dict.radarHelpShow}
+                                        </button>
+                                    </div>
+
+                                    {showRadarHelp && (
+                                        <div className="mb-4 rounded-xl border border-neutral-800 bg-neutral-950/40 p-4 text-xs text-neutral-300">
                                             <p>{dict.radarHelpP1}</p>
                                             <p className="mt-2">{dict.radarHelpP2}</p>
                                             <p className="mt-2">{dict.radarHelpP3}</p>
@@ -485,74 +506,7 @@ export default function SimulatorPage({
                                         </div>
                                     )}
 
-                                    <HybridRadarMap
-                                        axes={result.axes}
-                                        grind={grind}
-                                        ratio={ratio}
-                                        state={result.state}
-                                        dict={dict}
-                                    />
-                                </div>
-
-                                {/* desktop */}
-                                <div className="hidden lg:grid lg:grid-cols-2 lg:gap-6">
-                                    <div className="flex flex-col">
-                                        <div className="mb-2 flex items-center justify-between">
-                                            <span className="text-xs text-neutral-500">{dict.mapHelpLabel}</span>
-
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowMapHelp(!showMapHelp)}
-                                                className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
-                                            >
-                                                {showMapHelp ? dict.mapHelpHide : dict.mapHelpShow}
-                                            </button>
-                                        </div>
-
-                                        {showMapHelp && (
-                                            <div className="mb-4 rounded-xl border border-neutral-800 bg-neutral-950/40 p-4 text-xs text-neutral-300">
-                                                <p>{dict.mapHelpP1}</p>
-                                                <p className="mt-2">{dict.mapHelpP2}</p>
-                                                <p className="mt-2">{dict.mapHelpP3}</p>
-                                                <p className="mt-2">{dict.mapHelpP4}</p>
-                                            </div>
-                                        )}
-
-                                        <ExtractionMap
-                                            grind={grind}
-                                            ratio={ratio}
-                                            state={result.state}
-                                            styleHint={result.styleHint}
-                                            temperatureC={advancedMode && useTemperature ? temperature : undefined}
-                                            pressureBar={advancedMode && usePressure ? pressure : undefined}
-                                            dict={dict}
-                                        />
-                                    </div>
-
-                                    <div className="flex flex-col">
-                                        <div className="mb-2 flex items-center justify-between">
-                                            <span className="text-xs text-neutral-500">{dict.radarHelpLabel}</span>
-
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowRadarHelp(!showRadarHelp)}
-                                                className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
-                                            >
-                                                {showRadarHelp ? dict.radarHelpHide : dict.radarHelpShow}
-                                            </button>
-                                        </div>
-
-                                        {showRadarHelp && (
-                                            <div className="mb-4 rounded-xl border border-neutral-800 bg-neutral-950/40 p-4 text-xs text-neutral-300">
-                                                <p>{dict.radarHelpP1}</p>
-                                                <p className="mt-2">{dict.radarHelpP2}</p>
-                                                <p className="mt-2">{dict.radarHelpP3}</p>
-                                                <p className="mt-2">{dict.radarHelpP4}</p>
-                                            </div>
-                                        )}
-
-                                        <FlavorRadar axes={result.axes} dict={dict} />
-                                    </div>
+                                    <FlavorRadar axes={result.axes} dict={dict} />
                                 </div>
                             </div>
 
@@ -560,6 +514,7 @@ export default function SimulatorPage({
                                 {stateDescription}
                             </p>
                         </div>
+
                         <p className="mt-6 text-xs text-neutral-500">{dict.note}</p>
                         <button
                             type="button"
