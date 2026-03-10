@@ -221,7 +221,7 @@ export default function SimulatorPage({
             ? dict.state_under
             : result.state === "Balanceado"
                 ? dict.state_balanced
-                : dict.state_over0;
+                : dict.state_over;
 
     const handleSaveRecipe = () => {
         const trimmedName = recipeName.trim();

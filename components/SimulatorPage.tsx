@@ -222,7 +222,7 @@ export default function SimulatorPage({
             ? dict.state_under
             : result.state === "Balanceado"
                 ? dict.state_balanced
-                : dict.state_over0;
+                : dict.state_over;
 
     const handleSaveRecipe = () => {
         const trimmedName = recipeName.trim();
@@ -436,13 +436,13 @@ export default function SimulatorPage({
                         ) : null}
 
                         <div className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
-                            <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-start justify-between gap-0 lg:gap-4">
                                 <div className="min-w-0">
                                     <p className="text-sm text-neutral-300">{dict.flavorProfile}</p>
-                                    <p className="mt-1 text-xs text-neutral-500">{dict.axesLabel}</p>
+                                    <p className="hidden lg:block mt-1 text-xs text-neutral-500">{dict.axesLabel}</p>
                                 </div>
 
-                                <div className="ml-auto flex items-start gap-8 text-right">
+                                <div className="ml-auto flex items-start gap-0 text-left lg:gap-8 lg:text-right">
                                     <div>
                                         <p className="text-xs text-neutral-400">{dict.estimatedExtraction}</p>
                                         <p className="text-sm text-neutral-200">
@@ -454,7 +454,7 @@ export default function SimulatorPage({
                                         <p className="text-xs text-neutral-300">
                                             {doseG}g → {result.beverageG}g ({fmtRatio(ratio)})
                                         </p>
-                                        <p className="mt-1 text-xs text-neutral-400">
+                                        <p className="mt-1 text-xs text-neutral-400 whitespace-nowrap">
                                             {dict.estimatedTime}: {result.estimatedTimeS}s
                                         </p>
                                     </div>
@@ -565,7 +565,7 @@ export default function SimulatorPage({
                                 </div>
                             </div>
 
-                            <p className="mt-2 text-[11px] text-neutral-400 lg:mt-4 lg:text-xs">
+                            <p className="mt-2 min-h-[4em] text-[11px] leading-[1.3] text-neutral-400 lg:mt-4 lg:min-h-0 lg:text-xs">
                                 {stateDescription}
                             </p>
                         </div>
