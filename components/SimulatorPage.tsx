@@ -675,7 +675,7 @@ export default function SimulatorPage({
                     </div>
 
                     {/* Controles */}
-                    <div className="rounded-2xl border border-neutral-600 bg-neutral-900/40 p-6">
+                    <div className="rounded-2xl border border-neutral-600 bg-neutral-900/40 px-4 py-3 lg:p-6">
                         <div className="flex items-center gap-3">
                             <h2 className="text-lg font-semibold">{dict.controls}</h2>
 
@@ -690,149 +690,153 @@ export default function SimulatorPage({
 
                         <p className="hidden lg:block mt-1 text-sm text-neutral-400">{dict.controlsDescription}</p>
 
-                        <div className="mt-6 space-y-5">
-                            {/* Molienda */}
-                            <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">{dict.grindLabel}</span>
-                                    <span className="text-xs text-neutral-400">{grind}/100</span>
-                                </div>
-                                <input
-                                    className="mt-3 w-full accent-neutral-200"
-                                    type="range"
-                                    min={0}
-                                    max={100}
-                                    value={grind}
-                                    onChange={(e) => setGrind(Number(e.target.value))}
-                                />
-                                <div className="mt-2 flex justify-between text-[11px] text-neutral-500">
-                                    <span>{dict.grindCoarse}</span>
-                                    <span>{dict.grindFine}</span>
-                                </div>
-                            </div>
-
-                            {/* Ratio */}
-                            <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">{dict.ratioLabel}</span>
-                                    <span className="text-xs text-neutral-400">{fmtRatio(ratio)}</span>
-                                </div>
-                                <input
-                                    className="mt-3 w-full accent-neutral-200"
-                                    type="range"
-                                    min={1.0}
-                                    max={3.2}
-                                    step={0.1}
-                                    value={ratio}
-                                    onChange={(e) => setRatio(Number(e.target.value))}
-                                />
-                                <div className="mt-2 flex justify-between text-[11px] text-neutral-500">
-                                    <span>{dict.ratioShort}</span>
-                                    <span>{dict.ratioLong}</span>
-                                </div>
-                            </div>
-
-                            {/* Temperatura */}
-                            {advancedMode && useTemperature && (
-                                <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm font-medium">{dict.temperatureLabel}</span>
-                                        <span className="text-xs text-neutral-400">{temperature}°C</span>
+                        <div className="mt-4 space-y-4 lg:mt-6 lg:space-y-5">
+                            <div className="grid grid-cols-2 gap-2 lg:gap-4">
+                                {/* Molienda */}
+                                <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
+                                    <div className="flex items-center justify-between text-[11px]">
+                                        <span className="text-neutral-200">{dict.grindLabel}</span>
+                                        <span className="text-neutral-200">{grind}/100</span>
                                     </div>
-
                                     <input
-                                        className="mt-3 w-full accent-neutral-200"
+                                        className="mt-1 w-full accent-neutral-200"
                                         type="range"
-                                        min={88}
-                                        max={98}
-                                        step={1}
-                                        value={temperature}
-                                        onChange={(e) => setTemperature(Number(e.target.value))}
+                                        min={0}
+                                        max={100}
+                                        value={grind}
+                                        onChange={(e) => setGrind(Number(e.target.value))}
                                     />
-
-                                    <div className="mt-2 flex justify-between text-[11px] text-neutral-500">
-                                        <span>88°C</span>
-                                        <span>98°C</span>
+                                    <div className="flex justify-between text-[10px] text-neutral-500">
+                                        <span>{dict.grindCoarse}</span>
+                                        <span>{dict.grindFine}</span>
                                     </div>
                                 </div>
-                            )}
 
-                            {/* Presión */}
-                            {advancedMode && usePressure && (
-                                <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm font-medium">{dict.pressureLabel}</span>
-                                        <span className="text-xs text-neutral-400">{pressure} bar</span>
+                                {/* Ratio */}
+                                <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
+                                    <div className="flex items-center justify-between text-[11px]">
+                                        <span className="text-neutral-200">{dict.ratioLabel}</span>
+                                        <span className="text-neutral-200">{fmtRatio(ratio)}</span>
                                     </div>
-
                                     <input
-                                        className="mt-3 w-full accent-neutral-200"
+                                        className="mt-1 w-full accent-neutral-200"
                                         type="range"
-                                        min={6}
-                                        max={10}
-                                        step={0.5}
-                                        value={pressure}
-                                        onChange={(e) => setPressure(Number(e.target.value))}
+                                        min={1.0}
+                                        max={3.2}
+                                        step={0.1}
+                                        value={ratio}
+                                        onChange={(e) => setRatio(Number(e.target.value))}
                                     />
-
-                                    <div className="mt-2 flex justify-between text-[11px] text-neutral-500">
-                                        <span>6 bar</span>
-                                        <span>10 bar</span>
+                                    <div className="flex justify-between text-[10px] text-neutral-500">
+                                        <span>{dict.ratioShort}</span>
+                                        <span>{dict.ratioLong}</span>
                                     </div>
                                 </div>
-                            )}
+
+                                {/* Temperatura */}
+                                {advancedMode && useTemperature && (
+                                    <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
+                                        <div className="flex items-center justify-between text-[11px]">
+                                            <span className="text-neutral-200">{dict.temperatureLabel}</span>
+                                            <span className="text-neutral-200">{temperature}°C</span>
+                                        </div>
+
+                                        <input
+                                            className="mt-1 w-full accent-neutral-200"
+                                            type="range"
+                                            min={88}
+                                            max={98}
+                                            step={1}
+                                            value={temperature}
+                                            onChange={(e) => setTemperature(Number(e.target.value))}
+                                        />
+
+                                        <div className="flex justify-between text-[10px] text-neutral-500">
+                                            <span>88°C</span>
+                                            <span>98°C</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Presión */}
+                                {advancedMode && usePressure && (
+                                    <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
+                                        <div className="flex items-center justify-between text-[11px]">
+                                            <span className="text-neutral-200">{dict.pressureLabel}</span>
+                                            <span className="text-neutral-200">{pressure} bar</span>
+                                        </div>
+
+                                        <input
+                                            className="mt-1 w-full accent-neutral-200"
+                                            type="range"
+                                            min={6}
+                                            max={10}
+                                            step={0.5}
+                                            value={pressure}
+                                            onChange={(e) => setPressure(Number(e.target.value))}
+                                        />
+
+                                        <div className="flex justify-between text-[10px] text-neutral-500">
+                                            <span>6 bar</span>
+                                            <span>10 bar</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
 
                             {/* Agua */}
                             {advancedMode && useWater && (
-                                <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm font-medium">{dict.waterLabel}</span>
-                                        <span className="text-xs text-neutral-400">
+                                <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
+                                    <div className="flex items-center justify-between text-[11px]">
+                                        <span className="text-neutral-200">{dict.waterLabel}</span>
+                                        <span className="text-neutral-200">
                                             GH {waterGH} · KH {waterKH}
                                         </span>
                                     </div>
 
-                                    <div className="mt-4">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-xs text-neutral-400">GH</span>
-                                            <span className="text-xs text-neutral-400">{waterGH}</span>
+                                    <div className="mt-2 grid grid-cols-2 gap-2">
+                                        <div>
+                                            <div className="flex items-center justify-between text-[11px]">
+                                                <span className="text-neutral-400">GH</span>
+                                                <span className="text-neutral-400">{waterGH}</span>
+                                            </div>
+
+                                            <input
+                                                className="mt-1 w-full accent-neutral-200"
+                                                type="range"
+                                                min={1}
+                                                max={12}
+                                                step={1}
+                                                value={waterGH}
+                                                onChange={(e) => setWaterGH(Number(e.target.value))}
+                                            />
                                         </div>
 
-                                        <input
-                                            className="mt-2 w-full accent-neutral-200"
-                                            type="range"
-                                            min={1}
-                                            max={12}
-                                            step={1}
-                                            value={waterGH}
-                                            onChange={(e) => setWaterGH(Number(e.target.value))}
-                                        />
-                                    </div>
+                                        <div>
+                                            <div className="flex items-center justify-between text-[11px]">
+                                                <span className="text-neutral-400">KH</span>
+                                                <span className="text-neutral-400">{waterKH}</span>
+                                            </div>
 
-                                    <div className="mt-4">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-xs text-neutral-400">KH</span>
-                                            <span className="text-xs text-neutral-400">{waterKH}</span>
+                                            <input
+                                                className="mt-1 w-full accent-neutral-200"
+                                                type="range"
+                                                min={0}
+                                                max={8}
+                                                step={1}
+                                                value={waterKH}
+                                                onChange={(e) => setWaterKH(Number(e.target.value))}
+                                            />
                                         </div>
-
-                                        <input
-                                            className="mt-2 w-full accent-neutral-200"
-                                            type="range"
-                                            min={0}
-                                            max={8}
-                                            step={1}
-                                            value={waterKH}
-                                            onChange={(e) => setWaterKH(Number(e.target.value))}
-                                        />
                                     </div>
                                 </div>
                             )}
 
                             {/* Tipo de café */}
-                            <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
-                                <div className="flex items-center justify-between">
+                            <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
+                                <div className="flex items-center justify-between text-[11px]">
                                     <span className="text-sm font-medium">{dict.coffeeType}</span>
-                                    <span className="text-xs text-neutral-500">
+                                    <span className="text-xs text-neutral-200">
                                         {roastLabel} · {processLabel}
                                     </span>
                                 </div>
@@ -869,7 +873,7 @@ export default function SimulatorPage({
                             </div>
 
                             {/* Presets rápidos */}
-                            <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
+                            <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
                                 <p className="mb-3 text-xs text-neutral-400">{dict.quickPresets}</p>
                                 <div className="flex flex-wrap gap-2">
                                     <button
