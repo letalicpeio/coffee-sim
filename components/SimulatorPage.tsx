@@ -339,21 +339,60 @@ export default function SimulatorPage({
                         </button>
                     </div>
 
-                    <a
-                        href="#simulador"
-                        className="mt-8 inline-flex items-center justify-center rounded-xl bg-neutral-50 px-5 py-3 text-sm font-medium text-neutral-950 hover:bg-white"
-                    >
-                        {dict.tryNow}
-                    </a>
+                    <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <a
+                            href="#simulador"
+                            className="inline-flex items-center justify-center rounded-xl bg-neutral-50 px-5 py-3 text-sm font-medium text-neutral-950 hover:bg-white"
+                        >
+                            {dict.tryNow}
+                        </a>
+
+                        <div className="flex flex-col gap-2 sm:items-end">
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    const url = window.location.href;
+                                    await navigator.clipboard.writeText(url);
+                                    setCopied(true);
+                                    window.setTimeout(() => setCopied(false), 1500);
+                                }}
+                                className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
+                            >
+                                {copied ? dict.copied : dict.copyLink}
+                            </button>
+
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    placeholder={dict.recipeNamePlaceholder}
+                                    className="min-w-0 flex-1 rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 outline-none"
+                                    value={recipeName}
+                                    onChange={(e) => setRecipeName(e.target.value)}
+                                />
+
+                                <button
+                                    type="button"
+                                    onClick={handleSaveRecipe}
+                                    className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
+                                >
+                                    {dict.save}
+                                </button>
+                            </div>
+
+                            {saveMessage && (
+                                <p className="text-[11px] text-neutral-400">{saveMessage}</p>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </section>
 
-            <section id="simulador" className="mx-auto max-w-screen-2xl px-6 pb-20">
-                <div className="grid gap-6 lg:grid-cols-2">
+            <section id="simulador" className="mx-auto w-full max-w-screen-2xl px-4 pb-20 lg:px-6">
+                <div className="grid w-full gap-6 lg:grid-cols-2">
                     {/* Resultado */}
                     <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
-                        <div className="flex items-start justify-between gap-4">
-                            <div>
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                            <div >
                                 <h2 className="text-lg font-semibold">
                                     {recipeName ? recipeName : dict.result}
                                 </h2>
@@ -373,43 +412,7 @@ export default function SimulatorPage({
                                 </p>
                             </div>
 
-                            <div className="flex flex-col items-end gap-2">
 
-
-                                <button
-                                    type="button"
-                                    onClick={async () => {
-                                        const url = window.location.href;
-                                        await navigator.clipboard.writeText(url);
-                                        setCopied(true);
-                                        window.setTimeout(() => setCopied(false), 1500);
-                                    }}
-                                    className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
-                                >
-                                    {copied ? dict.copied : dict.copyLink}
-                                </button>
-
-                                <div className="mt-3 flex items-center gap-2">
-                                    <input
-                                        type="text"
-                                        placeholder={dict.recipeNamePlaceholder}
-                                        className="flex-1 rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 outline-none"
-                                        value={recipeName}
-                                        onChange={(e) => setRecipeName(e.target.value)}
-                                    />
-
-                                    <button
-                                        type="button"
-                                        onClick={handleSaveRecipe}
-                                        className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
-                                    >
-                                        {dict.save}
-                                    </button>
-                                </div>
-                                {saveMessage && (
-                                    <p className="mt-2 text-[11px] text-neutral-400">{saveMessage}</p>
-                                )}
-                            </div>
                         </div>
 
                         {recipeName ? (
