@@ -26,6 +26,8 @@ export default function HybridRadarMap({
     grind,
     ratio,
     state,
+    temperatureC,
+    pressureBar,
     dict,
     size = 340,
 }: {
@@ -33,6 +35,8 @@ export default function HybridRadarMap({
     grind: number;
     ratio: number;
     state: string;
+    temperatureC?: number;
+    pressureBar?: number;
     dict: any;
     size?: number;
 }) {
@@ -76,10 +80,27 @@ export default function HybridRadarMap({
     const x = (clamp(ratio, 1.0, 3.2) - 1.0) / (3.2 - 1.0);
     const y = clamp(grind, 0, 100) / 100;
 
-    const mapRadius = outerR * 0.95;
-    const mapX = cx + (x - 0.5) * 2 * mapRadius * 0.78;
-    const mapY = cy - (y - 0.5) * 2 * mapRadius * 0.78;
+    const tempN =
+        temperatureC !== undefined ? (temperatureC - 88) / (98 - 88) : 0.5;
+    const pressureN =
+        pressureBar !== undefined ? (pressureBar - 6) / (10 - 6) : 0.5;
 
+    const xShift =
+        (tempN - 0.5) * 0.04 +
+        (pressureN - 0.5) * 0.03;
+
+    const yShift =
+        (tempN - 0.5) * 0.06 +
+        (pressureN - 0.5) * 0.05;
+
+    const shiftedX = clamp(x + xShift, 0, 1);
+    const shiftedY = clamp(y + yShift, 0, 1);
+
+    const mapRadius = outerR * 0.95;
+    const mapX = cx + (shiftedX - 0.5) * 2 * mapRadius * 0.78;
+    const mapY = cy - (shiftedY - 0.5) * 2 * mapRadius * 0.78;
+
+    // Color del punto según estado (coherente con otros mapas)
     const dot =
         state === "Subextraído"
             ? "rgba(96,165,250,0.95)"

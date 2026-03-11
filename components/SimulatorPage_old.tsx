@@ -628,7 +628,16 @@ export default function SimulatorPage({
 
                             <button
                                 type="button"
-                                onClick={() => setAdvancedMode(!advancedMode)}
+                                onClick={() => {
+                                    const next = !advancedMode;
+                                    setAdvancedMode(next);
+
+                                    if (next) {
+                                        setUseTemperature(true);
+                                        setUsePressure(true);
+                                        setUseWater(true);
+                                    }
+                                }}
                                 className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
                             >
                                 {advancedMode ? dict.advancedHide : dict.advancedShow}
@@ -860,40 +869,7 @@ export default function SimulatorPage({
                                 </div>
                             </div>
 
-                            {/* Parámetros avanzados */}
-                            {advancedMode && (
-                                <div className="mt-4 rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
-                                    <p className="mb-3 text-xs text-neutral-400">
-                                        {dict.advancedParameters}
-                                    </p>
-
-                                    <div className="flex flex-wrap gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => setUseTemperature(!useTemperature)}
-                                            className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs hover:bg-neutral-800"
-                                        >
-                                            {dict.addTemperature}
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => setUsePressure(!usePressure)}
-                                            className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs hover:bg-neutral-800"
-                                        >
-                                            {dict.addPressure}
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => setUseWater(!useWater)}
-                                            className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs hover:bg-neutral-800"
-                                        >
-                                            {dict.addWater}
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
+                            
                             <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
                                 <div className="flex items-center justify-between gap-3">
                                     <p className="text-sm font-medium">

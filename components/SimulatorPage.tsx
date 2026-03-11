@@ -61,7 +61,7 @@ export default function SimulatorPage({
     const [saveMessage, setSaveMessage] = useState("");
     const [showEngineInfo, setShowEngineInfo] = useState(false);
     const [showHybridHelp, setShowHybridHelp] = useState(false);
-
+    const [method, setMethod] = useState("espresso");
 
     useEffect(() => {
 
@@ -340,13 +340,28 @@ export default function SimulatorPage({
                     </div>
 
                     <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <a
-                            href="#simulador"
-                            className="inline-flex items-center justify-center rounded-xl bg-neutral-50 px-5 py-3 text-sm font-medium text-neutral-950 hover:bg-white"
-                        >
-                            {dict.tryNow}
-                        </a>
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                            <a
+                                href="#simulador"
+                                className="inline-flex items-center justify-center rounded-xl bg-neutral-50 px-5 py-3 text-sm font-medium text-neutral-950 hover:bg-white"
+                            >
+                                {dict.tryNow}
+                            </a>
+                            <select
+                                value={method}
+                                onChange={(e) => setMethod(e.target.value)}
+                                className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-4 py-3 text-sm text-neutral-100 outline-none"
+                            >
+                                <option value="espresso">Espresso</option>
+                                <option value="v60">V60</option>
+                                <option value="french_press">French Press</option>
+                                <option value="aeropress">AeroPress</option>
+                                <option value="moka">Moka</option>
+                                <option value="cold_brew">Cold Brew</option>
+                            </select>
 
+
+                        </div>
                         <div className="flex flex-col gap-2 sm:items-end">
                             <button
                                 type="button"
@@ -499,6 +514,8 @@ export default function SimulatorPage({
                                         grind={grind}
                                         ratio={ratio}
                                         state={result.state}
+                                        temperatureC={advancedMode && useTemperature ? temperature : undefined}
+                                        pressureBar={advancedMode && usePressure ? pressure : undefined}
                                         dict={dict}
                                     />
                                 </div>
@@ -681,7 +698,16 @@ export default function SimulatorPage({
 
                             <button
                                 type="button"
-                                onClick={() => setAdvancedMode(!advancedMode)}
+                                onClick={() => {
+                                    const next = !advancedMode;
+                                    setAdvancedMode(next);
+
+                                    if (next) {
+                                        setUseTemperature(true);
+                                        setUsePressure(true);
+                                        setUseWater(true);
+                                    }
+                                }}
                                 className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
                             >
                                 {advancedMode ? dict.advancedHide : dict.advancedShow}
@@ -917,40 +943,6 @@ export default function SimulatorPage({
                                 </div>
                             </div>
 
-                            {/* Parámetros avanzados */}
-                            {advancedMode && (
-                                <div className="mt-4 rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
-                                    <p className="mb-3 text-xs text-neutral-400">
-                                        {dict.advancedParameters}
-                                    </p>
-
-                                    <div className="flex flex-wrap gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => setUseTemperature(!useTemperature)}
-                                            className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs hover:bg-neutral-800"
-                                        >
-                                            {dict.addTemperature}
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => setUsePressure(!usePressure)}
-                                            className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs hover:bg-neutral-800"
-                                        >
-                                            {dict.addPressure}
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => setUseWater(!useWater)}
-                                            className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs hover:bg-neutral-800"
-                                        >
-                                            {dict.addWater}
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
                             <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
                                 <div className="flex items-center justify-between gap-3">
                                     <p className="text-sm font-medium">
