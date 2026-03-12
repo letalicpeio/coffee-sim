@@ -3,6 +3,7 @@
 import ExtractionMap from "./ExtractionMap";
 import FlavorRadar from "./FlavorRadar";
 import HybridRadarMap from "./HybridRadarMap";
+import type { RadarProfile } from "./HybridRadarMap";
 import type { Dict } from "../lib/getDictionary";
 import type { BrewMethod } from "./types/brew";
 
@@ -25,7 +26,6 @@ type ResultData = {
 
 type Props = {
     dict: Dict;
-    locale: "es" | "en";
     recipeName: string;
     stateLabel: string;
     styleLabel: string;
@@ -56,9 +56,14 @@ function fmtRatio(r: number) {
     return `1:${r.toFixed(1)}`;
 }
 
+function stateColor(state: string): string {
+    if (state === "Subextraído")  return "rgba(96,165,250,0.95)";
+    if (state === "Sobreextraído") return "rgba(248,113,113,0.95)";
+    return "rgba(167,243,208,0.95)";
+}
+
 export default function SimulatorResultPanel({
     dict,
-    locale,
     recipeName,
     stateLabel,
     styleLabel,
@@ -188,12 +193,14 @@ export default function SimulatorResultPanel({
                         )}
 
                         <HybridRadarMap
-                            axes={result.axes}
-                            grind={grind}
-                            ratio={ratio}
-                            state={result.state}
-                            temperatureC={advancedMode && useTemperature ? temperature : undefined}
-                            pressureBar={advancedMode && usePressure ? pressure : undefined}
+                            profiles={[{
+                                axes: result.axes,
+                                grind,
+                                ratio,
+                                color: stateColor(result.state),
+                                temperatureC: advancedMode && useTemperature ? temperature : undefined,
+                                pressureBar:  advancedMode && usePressure  ? pressure    : undefined,
+                            } satisfies RadarProfile]}
                             dict={dict}
                         />
                     </div>
@@ -294,94 +301,78 @@ export default function SimulatorResultPanel({
                     <div className="mb-4 grid grid-cols-2 gap-2 text-[10px] text-neutral-400 sm:grid-cols-4">
                         <div className="rounded-lg border border-neutral-800 bg-neutral-950/50 px-2 py-1.5 text-center">
                             <p className="text-neutral-200">8</p>
-                            <p>{locale === "es" ? "variables" : "variables"}</p>
+                            <p>{dict.engineVariables}</p>
                         </div>
 
                         <div className="rounded-lg border border-neutral-800 bg-neutral-950/50 px-2 py-1.5 text-center">
                             <p className="text-neutral-200">5</p>
-                            <p>{locale === "es" ? "ejes sensoriales" : "sensory axes"}</p>
+                            <p>{dict.engineSensoryAxes}</p>
                         </div>
 
                         <div className="rounded-lg border border-neutral-800 bg-neutral-950/50 px-2 py-1.5 text-center">
                             <p className="text-neutral-200">0–100</p>
-                            <p>{locale === "es" ? "índice extracción" : "extraction index"}</p>
+                            <p>{dict.engineExtractionIndex}</p>
                         </div>
 
                         <div className="rounded-lg border border-neutral-800 bg-neutral-950/50 px-2 py-1.5 text-center">
                             <p className="text-neutral-200">AI</p>
-                            <p>{locale === "es" ? "ajuste iterativo" : "iterative tuning"}</p>
+                            <p>{dict.engineIterativeTuning}</p>
                         </div>
                     </div>
 
                     <div className="mb-4 flex items-start justify-between gap-3">
                         <div>
                             <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-500">
-                                {locale === "es" ? "Simulation Engine" : "Simulation Engine"}
+                                {dict.engineTitle}
                             </p>
                             <p className="mt-1 text-sm font-medium text-neutral-100">
-                                {locale === "es" ? "Descripción técnica" : "Technical overview"}
+                                {dict.engineTechnicalOverview}
                             </p>
                         </div>
 
                         <span className="rounded-full border border-neutral-800 bg-neutral-900/60 px-2.5 py-1 text-[10px] uppercase tracking-wide text-neutral-300">
-                            {locale === "es" ? "Heuristic model v1" : "Heuristic model v1"}
+                            {dict.engineModelTag}
                         </span>
                     </div>
 
                     <div className="space-y-3 text-[11px] leading-relaxed">
                         <div>
-                            <p className="font-medium text-neutral-200">
-                                {locale === "es" ? "Input normalization" : "Input normalization"}
-                            </p>
+                            <p className="font-medium text-neutral-200">{dict.engineSection_inputNorm}</p>
                             <p className="text-neutral-400">{dict.engineInfo1}</p>
                         </div>
 
                         <div>
-                            <p className="font-medium text-neutral-200">
-                                {locale === "es" ? "Primary extraction drivers" : "Primary extraction drivers"}
-                            </p>
+                            <p className="font-medium text-neutral-200">{dict.engineSection_primaryDrivers}</p>
                             <p className="text-neutral-400">{dict.engineInfo2}</p>
                         </div>
 
                         <div>
-                            <p className="font-medium text-neutral-200">
-                                {locale === "es" ? "Coffee-dependent modulators" : "Coffee-dependent modulators"}
-                            </p>
+                            <p className="font-medium text-neutral-200">{dict.engineSection_coffeeMod}</p>
                             <p className="text-neutral-400">{dict.engineInfo3}</p>
                         </div>
 
                         <div>
-                            <p className="font-medium text-neutral-200">
-                                {locale === "es" ? "Advanced parameters" : "Advanced parameters"}
-                            </p>
+                            <p className="font-medium text-neutral-200">{dict.engineSection_advancedParams}</p>
                             <p className="text-neutral-400">{dict.engineInfo4}</p>
                         </div>
 
                         <div>
-                            <p className="font-medium text-neutral-200">
-                                {locale === "es" ? "Sensory projection" : "Sensory projection"}
-                            </p>
+                            <p className="font-medium text-neutral-200">{dict.engineSection_sensoryProjection}</p>
                             <p className="text-neutral-400">{dict.engineInfo5}</p>
                         </div>
 
                         <div>
-                            <p className="font-medium text-neutral-200">
-                                {locale === "es" ? "Sensory axes" : "Sensory axes"}
-                            </p>
+                            <p className="font-medium text-neutral-200">{dict.engineSection_sensoryAxes}</p>
                             <p className="text-neutral-400">{dict.engineInfo6}</p>
                         </div>
 
                         <div>
-                            <p className="font-medium text-neutral-200">
-                                {locale === "es" ? "Probabilistic output model" : "Probabilistic output model"}
-                            </p>
+                            <p className="font-medium text-neutral-200">{dict.engineSection_probabilistic}</p>
                             <p className="text-neutral-400">{dict.engineInfo7}</p>
                         </div>
 
                         <div>
-                            <p className="font-medium text-neutral-200">
-                                {locale === "es" ? "AI-assisted calibration" : "AI-assisted calibration"}
-                            </p>
+                            <p className="font-medium text-neutral-200">{dict.engineSection_aiCalibration}</p>
                             <p className="text-neutral-400">{dict.engineInfo8}</p>
                         </div>
                     </div>
