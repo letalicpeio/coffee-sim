@@ -3,7 +3,6 @@
 import type { Dict } from "../lib/getDictionary";
 import type { Process, Roast } from "../engine/espressoEngine";
 import type { BrewMethod } from "./types/brew";
-import type { SavedRecipe } from "./types/recipe";
 import EspressoControls from "./controls/EspressoControls";
 import V60Controls from "./controls/V60Controls";
 import FrenchPressControls from "./controls/FrenchPressControls";
@@ -41,9 +40,6 @@ type Props = {
     setProcess: (value: Process) => void;
     roastLabel: string;
     processLabel: string;
-    savedRecipes: SavedRecipe[];
-    setSavedRecipes: (value: SavedRecipe[]) => void;
-    onLoadRecipe: (recipe: SavedRecipe) => void;
     v60TotalTimeS: number;
     setV60TotalTimeS: (value: number) => void;
     fpTotalTimeS: number;
@@ -82,9 +78,6 @@ export default function SimulatorControlsPanel({
     process, setProcess,
     roastLabel,
     processLabel,
-    savedRecipes,
-    setSavedRecipes,
-    onLoadRecipe,
     v60TotalTimeS,
     setV60TotalTimeS,
     fpTotalTimeS,
@@ -251,29 +244,29 @@ export default function SimulatorControlsPanel({
                             <button type="button" onClick={() => { setGrind(50); setRatio(2.8); setRoast("medio"); setProcess("natural"); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">{dict.preset_naturalLungo}</button>
                         </>)}
                         {method === "v60" && (<>
-                            <button type="button" onClick={() => { setGrind(75); setRatio(16); setRoast("claro"); setProcess("lavado"); setTemperature(92); setV60TotalTimeS(240); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">Light Washed</button>
-                            <button type="button" onClick={() => { setGrind(70); setRatio(15); setRoast("medio"); setProcess("lavado"); setTemperature(93); setV60TotalTimeS(210); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">V60 Estándar</button>
-                            <button type="button" onClick={() => { setGrind(72); setRatio(15); setRoast("claro"); setProcess("natural"); setTemperature(91); setV60TotalTimeS(240); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">Natural Frutal</button>
+                            <button type="button" onClick={() => { setGrind(75); setRatio(16); setRoast("claro"); setProcess("lavado"); setTemperature(92); setV60TotalTimeS(240); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">{dict.preset_v60_lightWashed}</button>
+                            <button type="button" onClick={() => { setGrind(70); setRatio(15); setRoast("medio"); setProcess("lavado"); setTemperature(93); setV60TotalTimeS(210); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">{dict.preset_v60_standard}</button>
+                            <button type="button" onClick={() => { setGrind(72); setRatio(15); setRoast("claro"); setProcess("natural"); setTemperature(91); setV60TotalTimeS(240); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">{dict.preset_v60_fruityNatural}</button>
                         </>)}
                         {method === "french_press" && (<>
-                            <button type="button" onClick={() => { setGrind(35); setRatio(16); setRoast("claro"); setProcess("lavado"); setTemperature(91); setFpTotalTimeS(200); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">Mañana Suave</button>
-                            <button type="button" onClick={() => { setGrind(40); setRatio(14); setRoast("medio"); setProcess("lavado"); setTemperature(93); setFpTotalTimeS(240); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">Francés Clásico</button>
-                            <button type="button" onClick={() => { setGrind(45); setRatio(12); setRoast("oscuro"); setProcess("natural"); setTemperature(94); setFpTotalTimeS(270); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">Intenso Natural</button>
+                            <button type="button" onClick={() => { setGrind(35); setRatio(16); setRoast("claro"); setProcess("lavado"); setTemperature(91); setFpTotalTimeS(200); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">{dict.preset_fp_gentleMorning}</button>
+                            <button type="button" onClick={() => { setGrind(40); setRatio(14); setRoast("medio"); setProcess("lavado"); setTemperature(93); setFpTotalTimeS(240); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">{dict.preset_fp_classic}</button>
+                            <button type="button" onClick={() => { setGrind(45); setRatio(12); setRoast("oscuro"); setProcess("natural"); setTemperature(94); setFpTotalTimeS(270); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">{dict.preset_fp_intenseNatural}</button>
                         </>)}
                         {method === "aeropress" && (<>
-                            <button type="button" onClick={() => { setGrind(70); setRatio(7); setTemperature(85); setAeroTotalTimeS(60); setAeroPressureLevel(4); setAeroInverted(false); setRoast("medio"); setProcess("lavado"); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">Rápido Express</button>
-                            <button type="button" onClick={() => { setGrind(60); setRatio(10); setTemperature(88); setAeroTotalTimeS(120); setAeroPressureLevel(3); setAeroInverted(true); setRoast("claro"); setProcess("natural"); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">Invertido Largo</button>
-                            <button type="button" onClick={() => { setGrind(75); setRatio(6); setTemperature(90); setAeroTotalTimeS(90); setAeroPressureLevel(5); setAeroInverted(false); setRoast("oscuro"); setProcess("lavado"); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">Bold &amp; Strong</button>
+                            <button type="button" onClick={() => { setGrind(70); setRatio(7); setTemperature(85); setAeroTotalTimeS(60); setAeroPressureLevel(4); setAeroInverted(false); setRoast("medio"); setProcess("lavado"); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">{dict.preset_aero_quickExpress}</button>
+                            <button type="button" onClick={() => { setGrind(60); setRatio(10); setTemperature(88); setAeroTotalTimeS(120); setAeroPressureLevel(3); setAeroInverted(true); setRoast("claro"); setProcess("natural"); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">{dict.preset_aero_longInverted}</button>
+                            <button type="button" onClick={() => { setGrind(75); setRatio(6); setTemperature(90); setAeroTotalTimeS(90); setAeroPressureLevel(5); setAeroInverted(false); setRoast("oscuro"); setProcess("lavado"); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">{dict.preset_aero_boldStrong}</button>
                         </>)}
                         {method === "moka" && (<>
-                            <button type="button" onClick={() => { setGrind(75); setRatio(8); setMokaHeatLevel(2); setMokaWaterTempC(20); setRoast("medio"); setProcess("honey"); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">Moka Suave</button>
-                            <button type="button" onClick={() => { setGrind(80); setRatio(7); setMokaHeatLevel(3); setMokaWaterTempC(20); setRoast("oscuro"); setProcess("lavado"); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">Moka Clásico</button>
-                            <button type="button" onClick={() => { setGrind(85); setRatio(6); setMokaHeatLevel(4); setMokaWaterTempC(60); setRoast("oscuro"); setProcess("natural"); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">Moka Intenso</button>
+                            <button type="button" onClick={() => { setGrind(75); setRatio(8); setMokaHeatLevel(2); setMokaWaterTempC(20); setRoast("medio"); setProcess("honey"); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">{dict.preset_moka_gentle}</button>
+                            <button type="button" onClick={() => { setGrind(80); setRatio(7); setMokaHeatLevel(3); setMokaWaterTempC(20); setRoast("oscuro"); setProcess("lavado"); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">{dict.preset_moka_classic}</button>
+                            <button type="button" onClick={() => { setGrind(85); setRatio(6); setMokaHeatLevel(4); setMokaWaterTempC(60); setRoast("oscuro"); setProcess("natural"); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">{dict.preset_moka_intense}</button>
                         </>)}
                         {method === "cold_brew" && (<>
-                            <button type="button" onClick={() => { setGrind(35); setRatio(5); setColdBrewTotalTimeH(18); setRoast("oscuro"); setProcess("lavado"); setColdBrewFridgeTempC(4); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">Concentrado Oscuro</button>
-                            <button type="button" onClick={() => { setGrind(45); setRatio(8); setColdBrewTotalTimeH(16); setRoast("medio"); setProcess("lavado"); setColdBrewFridgeTempC(4); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">Cold Brew Estándar</button>
-                            <button type="button" onClick={() => { setGrind(50); setRatio(8); setColdBrewTotalTimeH(20); setRoast("claro"); setProcess("natural"); setColdBrewFridgeTempC(3); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">Natural Frutal</button>
+                            <button type="button" onClick={() => { setGrind(35); setRatio(5); setColdBrewTotalTimeH(18); setRoast("oscuro"); setProcess("lavado"); setColdBrewFridgeTempC(4); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">{dict.preset_cb_darkConcentrate}</button>
+                            <button type="button" onClick={() => { setGrind(45); setRatio(8); setColdBrewTotalTimeH(16); setRoast("medio"); setProcess("lavado"); setColdBrewFridgeTempC(4); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">{dict.preset_cb_standard}</button>
+                            <button type="button" onClick={() => { setGrind(50); setRatio(8); setColdBrewTotalTimeH(20); setRoast("claro"); setProcess("natural"); setColdBrewFridgeTempC(3); }} className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800">{dict.preset_cb_fruityNatural}</button>
                         </>)}
                     </div>
                 </div>
@@ -313,69 +306,6 @@ export default function SimulatorControlsPanel({
                     <p className="mt-3 text-xs text-neutral-500">{dict.roastAdvice}</p>
                 </div>
 
-                {/* Recetas guardadas */}
-                <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
-                    <div className="flex items-center justify-between gap-3">
-                        <p className="text-sm font-medium">{dict.savedRecipes}</p>
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs text-neutral-500">{savedRecipes.length}</span>
-                            {savedRecipes.length > 0 && (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setSavedRecipes([]);
-                                        window.localStorage.removeItem("coffee-sim-recipes");
-                                    }}
-                                    className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-[11px] text-neutral-200 hover:bg-neutral-900"
-                                >
-                                    {dict.clearAllRecipes}
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-                    {savedRecipes.length === 0 ? (
-                        <p className="mt-3 text-xs text-neutral-500">{dict.noSavedRecipes}</p>
-                    ) : (
-                        <div className="mt-3 max-h-72 space-y-2 overflow-y-auto pr-1">
-                            {savedRecipes.map((recipe) => (
-                                <div
-                                    key={recipe.id}
-                                    className="rounded-lg border border-neutral-800 bg-neutral-900/50 px-3 py-2"
-                                >
-                                    <div className="flex items-center justify-between gap-3">
-                                        <div>
-                                            <p className="text-xs font-medium text-neutral-200">{recipe.name}</p>
-                                            <p className="mt-1 text-[11px] text-neutral-500">
-                                                {recipe.method} · {recipe.params.grind}/100 · 1:{recipe.params.ratio.toFixed(1)} · {recipe.params.roast} · {recipe.params.process}
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center">
-                                            <button
-                                                type="button"
-                                                onClick={() => onLoadRecipe(recipe)}
-                                                className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-[11px] text-neutral-200 hover:bg-neutral-900"
-                                            >
-                                                {dict.loadRecipe}
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    const updated = savedRecipes.filter((r) => r.id !== recipe.id);
-                                                    setSavedRecipes(updated);
-                                                    window.localStorage.setItem("coffee-sim-recipes", JSON.stringify(updated));
-                                                }}
-                                                className="ml-2 rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-[11px] text-neutral-200 hover:bg-neutral-900"
-                                            >
-                                                {dict.deleteRecipe}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
             </div>
         </div>
     );
