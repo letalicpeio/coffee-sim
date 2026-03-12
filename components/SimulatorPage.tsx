@@ -1,32 +1,185 @@
 "use client";
 
-import ExtractionMap from "./ExtractionMap";
-import FlavorRadar from "./FlavorRadar";
-import { useEffect, useMemo, useState } from "react";
-import { simulateEspresso, type Process, type Roast } from "../engine/espressoEngine";
-import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import SimulatorHero from "./SimulatorHero";
+import SimulatorResultPanel from "./SimulatorResultPanel";
+import SimulatorControlsPanel from "./SimulatorControlsPanel";
+import { useEffect, useMemo, useReducer } from "react";
+import { type Process, type Roast } from "../engine/espressoEngine";
+import { simulateCoffee } from "../engine/simulationEngine";
+import { useSearchParams, useRouter } from "next/navigation";
 import type { Dict } from "../lib/getDictionary";
-import HybridRadarMap from "./HybridRadarMap"
+import type { BrewMethod } from "./types/brew";
+import type { SavedRecipe } from "./types/recipe";
 
-function fmtRatio(r: number) {
-    return `1:${r.toFixed(1)}`;
-}
-
-type SavedRecipe = {
-    id: string;
-    name: string;
-    locale: "es" | "en";
+type State = {
+    method: BrewMethod;
     grind: number;
     ratio: number;
     roast: Roast;
     process: Process;
-    temperature?: number;
-    pressure?: number;
-    waterGH?: number;
-    waterKH?: number;
-    createdAt: string;
+    v60TotalTimeS: number;
+    fpTotalTimeS: number;
+    aeroTotalTimeS: number;
+    aeroPressureLevel: number;
+    aeroInverted: boolean;
+    mokaHeatLevel: number;
+    mokaWaterTempC: number;
+    coldBrewTotalTimeH: number;
+    coldBrewFridgeTempC: number;
+    advancedMode: boolean;
+    useTemperature: boolean;
+    usePressure: boolean;
+    useWater: boolean;
+    temperature: number;
+    pressure: number;
+    waterGH: number;
+    waterKH: number;
+    recipeName: string;
+    copied: boolean;
+    savedRecipes: SavedRecipe[];
+    saveMessage: string;
+    showMapHelp: boolean;
+    showRadarHelp: boolean;
+    showEngineInfo: boolean;
+    showHybridHelp: boolean;
 };
+
+type Action =
+    | { type: "SET_METHOD"; method: BrewMethod }
+    | { type: "SET_GRIND"; value: number }
+    | { type: "SET_RATIO"; value: number }
+    | { type: "SET_ROAST"; value: Roast }
+    | { type: "SET_PROCESS"; value: Process }
+    | { type: "SET_V60_TOTAL_TIME"; value: number }
+    | { type: "SET_FP_TOTAL_TIME"; value: number }
+    | { type: "SET_AERO_TOTAL_TIME"; value: number }
+    | { type: "SET_AERO_PRESSURE_LEVEL"; value: number }
+    | { type: "SET_AERO_INVERTED"; value: boolean }
+    | { type: "SET_MOKA_HEAT_LEVEL"; value: number }
+    | { type: "SET_MOKA_WATER_TEMP"; value: number }
+    | { type: "SET_COLD_BREW_TOTAL_TIME_H"; value: number }
+    | { type: "SET_COLD_BREW_FRIDGE_TEMP"; value: number }
+    | { type: "SET_ADVANCED_MODE"; value: boolean }
+    | { type: "SET_USE_TEMPERATURE"; value: boolean }
+    | { type: "SET_USE_PRESSURE"; value: boolean }
+    | { type: "SET_USE_WATER"; value: boolean }
+    | { type: "SET_TEMPERATURE"; value: number }
+    | { type: "SET_PRESSURE"; value: number }
+    | { type: "SET_WATER_GH"; value: number }
+    | { type: "SET_WATER_KH"; value: number }
+    | { type: "SET_RECIPE_NAME"; value: string }
+    | { type: "SET_COPIED"; value: boolean }
+    | { type: "SET_SAVED_RECIPES"; recipes: SavedRecipe[] }
+    | { type: "SET_SAVE_MESSAGE"; value: string }
+    | { type: "SET_SHOW_MAP_HELP"; value: boolean }
+    | { type: "SET_SHOW_RADAR_HELP"; value: boolean }
+    | { type: "SET_SHOW_ENGINE_INFO"; value: boolean }
+    | { type: "SET_SHOW_HYBRID_HELP"; value: boolean }
+    | { type: "LOAD_FROM_URL"; params: Partial<State> };
+
+// ─── Initial state ────────────────────────────────────────────────────────────
+
+const initialState: State = {
+    method: "espresso",
+    grind: 55,
+    ratio: 2.0,
+    roast: "claro",
+    process: "lavado",
+    v60TotalTimeS: 210,
+    fpTotalTimeS: 240,
+    aeroTotalTimeS: 90,
+    aeroPressureLevel: 3,
+    aeroInverted: false,
+    mokaHeatLevel: 3,
+    mokaWaterTempC: 20,
+    coldBrewTotalTimeH: 16,
+    coldBrewFridgeTempC: 4,
+    advancedMode: false,
+    useTemperature: false,
+    usePressure: false,
+    useWater: false,
+    temperature: 93,
+    pressure: 9,
+    waterGH: 6,
+    waterKH: 3,
+    recipeName: "",
+    copied: false,
+    savedRecipes: [],
+    saveMessage: "",
+    showMapHelp: false,
+    showRadarHelp: false,
+    showEngineInfo: false,
+    showHybridHelp: false,
+};
+
+// ─── Reducer ──────────────────────────────────────────────────────────────────
+
+function reducer(state: State, action: Action): State {
+    switch (action.type) {
+        case "SET_METHOD": {
+            const { method } = action;
+            const next: State = { ...state, method };
+            const methodDefaults: Record<string, { grind: number; ratio: number }> = {
+                espresso:     { grind: 55, ratio: 2.0  },
+                v60:          { grind: 70, ratio: 15.0 },
+                french_press: { grind: 40, ratio: 14.0 },
+                aeropress:    { grind: 65, ratio: 8.0  },
+                moka:         { grind: 80, ratio: 7.0  },
+                cold_brew:    { grind: 45, ratio: 8.0  },
+            };
+            const def = methodDefaults[method];
+            if (def) { next.grind = def.grind; next.ratio = def.ratio; }
+            return next;
+        }
+        case "SET_GRIND":           return { ...state, grind: action.value };
+        case "SET_RATIO":           return { ...state, ratio: action.value };
+        case "SET_ROAST":           return { ...state, roast: action.value };
+        case "SET_PROCESS":         return { ...state, process: action.value };
+        case "SET_V60_TOTAL_TIME":          return { ...state, v60TotalTimeS: action.value };
+        case "SET_FP_TOTAL_TIME":           return { ...state, fpTotalTimeS: action.value };
+        case "SET_AERO_TOTAL_TIME":         return { ...state, aeroTotalTimeS: action.value };
+        case "SET_AERO_PRESSURE_LEVEL":     return { ...state, aeroPressureLevel: action.value };
+        case "SET_AERO_INVERTED":           return { ...state, aeroInverted: action.value };
+        case "SET_MOKA_HEAT_LEVEL":         return { ...state, mokaHeatLevel: action.value };
+        case "SET_MOKA_WATER_TEMP":         return { ...state, mokaWaterTempC: action.value };
+        case "SET_COLD_BREW_TOTAL_TIME_H":  return { ...state, coldBrewTotalTimeH: action.value };
+        case "SET_COLD_BREW_FRIDGE_TEMP":   return { ...state, coldBrewFridgeTempC: action.value };
+        case "SET_ADVANCED_MODE": {
+            const next = { ...state, advancedMode: action.value };
+            if (action.value) {
+                next.useTemperature = true;
+                next.usePressure = true;
+                next.useWater = true;
+            }
+            return next;
+        }
+        case "SET_USE_TEMPERATURE": return { ...state, useTemperature: action.value };
+        case "SET_USE_PRESSURE":    return { ...state, usePressure: action.value };
+        case "SET_USE_WATER":       return { ...state, useWater: action.value };
+        case "SET_TEMPERATURE":     return { ...state, temperature: action.value };
+        case "SET_PRESSURE":        return { ...state, pressure: action.value };
+        case "SET_WATER_GH":        return { ...state, waterGH: action.value };
+        case "SET_WATER_KH":        return { ...state, waterKH: action.value };
+        case "SET_RECIPE_NAME":     return { ...state, recipeName: action.value };
+        case "SET_COPIED":          return { ...state, copied: action.value };
+        case "SET_SAVED_RECIPES":   return { ...state, savedRecipes: action.recipes };
+        case "SET_SAVE_MESSAGE":    return { ...state, saveMessage: action.value };
+        case "SET_SHOW_MAP_HELP":   return { ...state, showMapHelp: action.value };
+        case "SET_SHOW_RADAR_HELP": return { ...state, showRadarHelp: action.value };
+        case "SET_SHOW_ENGINE_INFO":return { ...state, showEngineInfo: action.value };
+        case "SET_SHOW_HYBRID_HELP":return { ...state, showHybridHelp: action.value };
+        case "LOAD_FROM_URL":       return { ...state, ...action.params };
+        default:                    return state;
+    }
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+const doseG = 18;
+
+function fmtRatio(r: number) {
+    return `1:${r.toFixed(1)}`;
+}
 
 export default function SimulatorPage({
     dict,
@@ -37,129 +190,184 @@ export default function SimulatorPage({
 }) {
     const searchParams = useSearchParams();
     const router = useRouter();
+    const [state, dispatch] = useReducer(reducer, initialState);
 
-    const [grind, setGrind] = useState(55);
-    const [ratio, setRatio] = useState(2.0);
-    const [roast, setRoast] = useState<Roast>("claro");
-    const [process, setProcess] = useState<Process>("lavado");
-    const [recipeName, setRecipeName] = useState("");
-    const [copied, setCopied] = useState(false);
+    const {
+        method, grind, ratio, roast, process, v60TotalTimeS,
+        fpTotalTimeS, aeroTotalTimeS, aeroPressureLevel, aeroInverted,
+        mokaHeatLevel, mokaWaterTempC, coldBrewTotalTimeH, coldBrewFridgeTempC,
+        advancedMode, useTemperature, usePressure, useWater,
+        temperature, pressure, waterGH, waterKH,
+        recipeName, copied, savedRecipes, saveMessage,
+        showMapHelp, showRadarHelp, showEngineInfo, showHybridHelp,
+    } = state;
 
-    const [advancedMode, setAdvancedMode] = useState(false);
-    const [useTemperature, setUseTemperature] = useState(false);
-    const [usePressure, setUsePressure] = useState(false);
-    const [useWater, setUseWater] = useState(false);
-
-    const [temperature, setTemperature] = useState(93);
-    const [pressure, setPressure] = useState(9);
-    const [waterGH, setWaterGH] = useState(6);
-    const [waterKH, setWaterKH] = useState(3);
-    const doseG = 18;
-    const [showMapHelp, setShowMapHelp] = useState(false);
-    const [showRadarHelp, setShowRadarHelp] = useState(false);
-    const [savedRecipes, setSavedRecipes] = useState<SavedRecipe[]>([]);
-    const [saveMessage, setSaveMessage] = useState("");
-    const [showEngineInfo, setShowEngineInfo] = useState(false);
-    const [showHybridHelp, setShowHybridHelp] = useState(false);
-    const [method, setMethod] = useState("espresso");
-
-    useEffect(() => {
-
-        const g = searchParams.get("grind");
-        const r = searchParams.get("ratio");
-        const ro = searchParams.get("roast");
-        const pr = searchParams.get("process");
-        const nm = searchParams.get("name");
-        const t = searchParams.get("temperature");
-        const p = searchParams.get("pressure");
-        const gh = searchParams.get("waterGH");
-        const kh = searchParams.get("waterKH");
-
-        if (nm !== null) {
-            setRecipeName(nm);
-        }
-
-        if (g !== null) {
-            const n = Number(g);
-            if (!Number.isNaN(n)) setGrind(Math.max(0, Math.min(100, Math.round(n))));
-        }
-
-        if (r !== null) {
-            const n = Number(r);
-            if (!Number.isNaN(n)) setRatio(Math.max(1.0, Math.min(3.2, Number(n.toFixed(1)))));
-        }
-
-        if (ro === "claro" || ro === "medio" || ro === "oscuro") setRoast(ro);
-        if (pr === "lavado" || pr === "natural" || pr === "honey") setProcess(pr);
-
-        if (t !== null) {
-            const n = Number(t);
-            if (!Number.isNaN(n)) {
-                setTemperature(Math.max(88, Math.min(98, n)));
-                setAdvancedMode(true);
-                setUseTemperature(true);
-            }
-        }
-
-        if (p !== null) {
-            const n = Number(p);
-            if (!Number.isNaN(n)) {
-                setPressure(Math.max(6, Math.min(10, n)));
-                setAdvancedMode(true);
-                setUsePressure(true);
-            }
-        }
-
-        if (gh !== null) {
-            const n = Number(gh);
-            if (!Number.isNaN(n)) {
-                setWaterGH(Math.max(1, Math.min(12, n)));
-                setAdvancedMode(true);
-                setUseWater(true);
-            }
-        }
-
-        if (kh !== null) {
-            const n = Number(kh);
-            if (!Number.isNaN(n)) {
-                setWaterKH(Math.max(0, Math.min(8, n)));
-                setAdvancedMode(true);
-                setUseWater(true);
-            }
-        }
-    }, [searchParams]);
-
+    // ── Carga inicial desde localStorage ────────────────────────────────────
     useEffect(() => {
         const raw = window.localStorage.getItem("coffee-sim-recipes");
         if (!raw) return;
-
         try {
             const parsed = JSON.parse(raw) as SavedRecipe[];
-            if (Array.isArray(parsed)) {
-                setSavedRecipes(parsed);
-            }
+            if (Array.isArray(parsed)) dispatch({ type: "SET_SAVED_RECIPES", recipes: parsed });
         } catch {
             console.error("No se pudieron leer las recetas guardadas");
         }
     }, []);
 
+    // ── Carga desde URL ──────────────────────────────────────────────────────
+    useEffect(() => {
+        const updates: Partial<State> = {};
+
+        const m = searchParams.get("method");
+        const loadedMethod: BrewMethod =
+            m === "espresso" || m === "v60" || m === "french_press" ||
+            m === "aeropress" || m === "moka" || m === "cold_brew"
+                ? (m as BrewMethod)
+                : "espresso";
+        if (m) updates.method = loadedMethod;
+
+        const g = searchParams.get("grind");
+        if (g !== null) {
+            const n = Number(g);
+            if (!Number.isNaN(n)) updates.grind = Math.max(0, Math.min(100, Math.round(n)));
+        }
+
+        const r = searchParams.get("ratio");
+        if (r !== null) {
+            const n = Number(r);
+            if (!Number.isNaN(n)) updates.ratio = Math.max(1.0, Math.min(20, Number(n.toFixed(1))));
+        }
+
+        const ro = searchParams.get("roast");
+        if (ro === "claro" || ro === "medio" || ro === "oscuro") updates.roast = ro;
+
+        const pr = searchParams.get("process");
+        if (pr === "lavado" || pr === "natural" || pr === "honey") updates.process = pr;
+
+        const nm = searchParams.get("name");
+        if (nm !== null) updates.recipeName = nm;
+
+        const t = searchParams.get("temperature");
+        if (t !== null) {
+            const n = Number(t);
+            if (!Number.isNaN(n)) {
+                updates.temperature = Math.max(88, Math.min(98, n));
+                // Para espresso, temperatura en URL implica modo avanzado
+                if (loadedMethod !== "v60" && loadedMethod !== "aeropress") {
+                    updates.advancedMode = true;
+                    updates.useTemperature = true;
+                }
+            }
+        }
+
+        const p = searchParams.get("pressure");
+        if (p !== null) {
+            const n = Number(p);
+            if (!Number.isNaN(n)) {
+                updates.pressure = Math.max(6, Math.min(10, n));
+                updates.advancedMode = true;
+                updates.usePressure = true;
+            }
+        }
+
+        const gh = searchParams.get("waterGH");
+        if (gh !== null) {
+            const n = Number(gh);
+            if (!Number.isNaN(n)) {
+                updates.waterGH = Math.max(1, Math.min(12, n));
+                updates.advancedMode = true;
+                updates.useWater = true;
+            }
+        }
+
+        const kh = searchParams.get("waterKH");
+        if (kh !== null) {
+            const n = Number(kh);
+            if (!Number.isNaN(n)) {
+                updates.waterKH = Math.max(0, Math.min(8, n));
+                updates.advancedMode = true;
+                updates.useWater = true;
+            }
+        }
+
+        const totalTimeS = searchParams.get("totalTimeS");
+        if (totalTimeS !== null) {
+            const n = Number(totalTimeS);
+            if (!Number.isNaN(n)) {
+                if (loadedMethod === "v60")           updates.v60TotalTimeS  = Math.max(120, Math.min(360, n));
+                else if (loadedMethod === "french_press") updates.fpTotalTimeS = Math.max(120, Math.min(360, n));
+                else if (loadedMethod === "aeropress")    updates.aeroTotalTimeS = Math.max(30, Math.min(120, n));
+            }
+        }
+
+        const totalTimeH = searchParams.get("totalTimeH");
+        if (totalTimeH !== null) {
+            const n = Number(totalTimeH);
+            if (!Number.isNaN(n)) updates.coldBrewTotalTimeH = Math.max(8, Math.min(24, n));
+        }
+
+        const heatLevel = searchParams.get("heatLevel");
+        if (heatLevel !== null) {
+            const n = Number(heatLevel);
+            if (!Number.isNaN(n)) updates.mokaHeatLevel = Math.max(1, Math.min(5, n));
+        }
+
+        const pressureLevel = searchParams.get("pressureLevel");
+        if (pressureLevel !== null) {
+            const n = Number(pressureLevel);
+            if (!Number.isNaN(n)) updates.aeroPressureLevel = Math.max(1, Math.min(5, n));
+        }
+
+        const inverted = searchParams.get("inverted");
+        if (inverted === "true") updates.aeroInverted = true;
+
+        const fridgeTempC = searchParams.get("fridgeTempC");
+        if (fridgeTempC !== null) {
+            const n = Number(fridgeTempC);
+            if (!Number.isNaN(n)) updates.coldBrewFridgeTempC = Math.max(2, Math.min(8, n));
+        }
+
+        const waterTempC = searchParams.get("waterTempC");
+        if (waterTempC !== null) {
+            const n = Number(waterTempC);
+            if (!Number.isNaN(n)) updates.mokaWaterTempC = Math.max(20, Math.min(95, n));
+        }
+
+        if (Object.keys(updates).length > 0) {
+            dispatch({ type: "LOAD_FROM_URL", params: updates });
+        }
+    }, [searchParams]);
+
+    // ── Sincronización a URL ─────────────────────────────────────────────────
     useEffect(() => {
         const qs = new URLSearchParams();
+        qs.set("method", method);
         qs.set("grind", String(grind));
         qs.set("ratio", ratio.toFixed(1));
         qs.set("roast", roast);
         qs.set("process", process);
 
-        if (recipeName.trim()) {
-            qs.set("name", recipeName.trim());
-        }
+        if (recipeName.trim()) qs.set("name", recipeName.trim());
 
-        if (advancedMode && useTemperature) {
+        if (method === "v60") {
             qs.set("temperature", String(temperature));
-        }
-
-        if (advancedMode && usePressure) {
-            qs.set("pressure", String(pressure));
+            qs.set("totalTimeS", String(v60TotalTimeS));
+        } else if (method === "aeropress") {
+            qs.set("temperature", String(temperature));
+            qs.set("totalTimeS", String(aeroTotalTimeS));
+            if (advancedMode) { qs.set("pressureLevel", String(aeroPressureLevel)); if (aeroInverted) qs.set("inverted", "true"); }
+        } else if (method === "french_press") {
+            qs.set("totalTimeS", String(fpTotalTimeS));
+            if (advancedMode && useTemperature) qs.set("temperature", String(temperature));
+        } else if (method === "moka") {
+            qs.set("heatLevel", String(mokaHeatLevel));
+            if (advancedMode) qs.set("waterTempC", String(mokaWaterTempC));
+        } else if (method === "cold_brew") {
+            qs.set("totalTimeH", String(coldBrewTotalTimeH));
+            qs.set("fridgeTempC", String(coldBrewFridgeTempC));
+        } else {
+            if (advancedMode && useTemperature) qs.set("temperature", String(temperature));
+            if (advancedMode && usePressure) qs.set("pressure", String(pressure));
         }
 
         if (advancedMode && useWater) {
@@ -167,875 +375,257 @@ export default function SimulatorPage({
             qs.set("waterKH", String(waterKH));
         }
 
-        const newUrl = `${window.location.pathname}?${qs.toString()}`;
-        window.history.replaceState(null, "", newUrl);
+        window.history.replaceState(null, "", `${window.location.pathname}?${qs.toString()}`);
     }, [
-        grind,
-        ratio,
-        roast,
-        process,
-        recipeName,
-        advancedMode,
-        useTemperature,
-        temperature,
-        usePressure,
-        pressure,
-        useWater,
-        waterGH,
-        waterKH,
+        method, grind, ratio, roast, process, recipeName,
+        advancedMode, useTemperature, temperature, usePressure, pressure,
+        useWater, waterGH, waterKH, v60TotalTimeS,
+        fpTotalTimeS, aeroTotalTimeS, aeroPressureLevel, aeroInverted,
+        mokaHeatLevel, mokaWaterTempC, coldBrewTotalTimeH, coldBrewFridgeTempC,
     ]);
 
-
-
+    // ── Resultado del motor ──────────────────────────────────────────────────
     const result = useMemo(
-        () =>
-            simulateEspresso({
-                grind,
-                ratio,
-                doseG,
-                roast,
-                process,
-                temperatureC: advancedMode && useTemperature ? temperature : undefined,
-                pressureBar: advancedMode && usePressure ? pressure : undefined,
-                waterGH: advancedMode && useWater ? waterGH : undefined,
-                waterKH: advancedMode && useWater ? waterKH : undefined,
-            }),
-        [
+        () => simulateCoffee(method, {
             grind,
             ratio,
             doseG,
             roast,
             process,
-            advancedMode,
-            useTemperature,
-            temperature,
-            usePressure,
-            pressure,
-            useWater,
-            waterGH,
-            waterKH,
-        ]
+            temperatureC:
+                method === "v60" || method === "aeropress" ? temperature
+                : method === "french_press" ? (advancedMode && useTemperature ? temperature : 93)
+                : method === "espresso" && advancedMode && useTemperature ? temperature
+                : undefined,
+            pressureBar:    method === "espresso" && advancedMode && usePressure ? pressure : undefined,
+            waterGH:        advancedMode && useWater ? waterGH : undefined,
+            waterKH:        advancedMode && useWater ? waterKH : undefined,
+            totalTimeS:     method === "v60" ? v60TotalTimeS
+                          : method === "french_press" ? fpTotalTimeS
+                          : method === "aeropress" ? aeroTotalTimeS
+                          : undefined,
+            totalTimeH:     method === "cold_brew" ? coldBrewTotalTimeH : undefined,
+            heatLevel:      method === "moka" ? mokaHeatLevel : undefined,
+            pressureLevel:  method === "aeropress" && advancedMode ? aeroPressureLevel : undefined,
+            inverted:       method === "aeropress" && advancedMode ? aeroInverted : undefined,
+            fridgeTempC:    method === "cold_brew" ? coldBrewFridgeTempC : undefined,
+            waterTempC:     method === "moka" && advancedMode ? mokaWaterTempC : undefined,
+        }),
+        [method, grind, ratio, roast, process, advancedMode, useTemperature, temperature,
+         usePressure, pressure, useWater, waterGH, waterKH, v60TotalTimeS,
+         fpTotalTimeS, aeroTotalTimeS, aeroPressureLevel, aeroInverted,
+         mokaHeatLevel, mokaWaterTempC, coldBrewTotalTimeH, coldBrewFridgeTempC]
     );
 
+    // ── Etiquetas derivadas ──────────────────────────────────────────────────
     const stateLabel =
-        result.state === "Subextraído"
-            ? dict.state_under
-            : result.state === "Balanceado"
-                ? dict.state_balanced
-                : dict.state_over;
+        result.state === "Subextraído" ? dict.state_under :
+        result.state === "Balanceado"  ? dict.state_balanced :
+                                         dict.state_over;
 
+    const styleLabels: Record<string, string> = {
+        Ristretto: dict.style_ristretto,
+        Espresso:  dict.style_espresso,
+        Lungo:     dict.style_lungo,
+    };
+
+    const roastLabels: Record<string, string> = {
+        claro:  dict.roast_light,
+        medio:  dict.roast_medium,
+        oscuro: dict.roast_dark,
+    };
+
+    const processLabels: Record<string, string> = {
+        lavado:  dict.process_washed,
+        natural: dict.process_natural,
+        honey:   dict.process_honey,
+    };
+
+    const roastLabel   = roastLabels[roast] ?? roast;
+    const processLabel = processLabels[process] ?? process;
+    const stateKey     = result.state === "Subextraído" ? "sub" : result.state === "Balanceado" ? "bal" : "over";
+    const stateDescription = (dict[`state_desc_${stateKey}_${method}`] ?? dict[`state_desc_${stateKey}`] ?? "") as string;
+    const styleLabel =
+        method === "espresso"     ? (styleLabels[result.styleHint ?? ""] ?? result.styleHint ?? "") :
+        method === "v60"          ? "V60" :
+        method === "french_press" ? "French Press" :
+        method === "aeropress"    ? "Aeropress" :
+        method === "moka"         ? "Moka" :
+                                    "Cold Brew";
+
+    // ── Handlers ─────────────────────────────────────────────────────────────
     const handleSaveRecipe = () => {
         const trimmedName = recipeName.trim();
-
         if (!trimmedName) {
-            setSaveMessage(dict.saveRecipeNeedName);
-            window.setTimeout(() => setSaveMessage(""), 2000);
+            dispatch({ type: "SET_SAVE_MESSAGE", value: dict.saveRecipeNeedName });
+            window.setTimeout(() => dispatch({ type: "SET_SAVE_MESSAGE", value: "" }), 2000);
             return;
         }
+
+        const commonWater = {
+            waterGH: advancedMode && useWater ? waterGH : undefined,
+            waterKH: advancedMode && useWater ? waterKH : undefined,
+        };
+
+        const params: SavedRecipe["params"] = (() => {
+            switch (method) {
+                case "v60":
+                    return { method: "v60" as const, grind, ratio, roast, process, temperatureC: temperature, totalTimeS: v60TotalTimeS, ...commonWater };
+                case "french_press":
+                    return { method: "french_press" as const, grind, ratio, roast, process, totalTimeS: fpTotalTimeS, temperatureC: advancedMode && useTemperature ? temperature : undefined, ...commonWater };
+                case "aeropress":
+                    return { method: "aeropress" as const, grind, ratio, roast, process, temperatureC: temperature, totalTimeS: aeroTotalTimeS, pressureLevel: advancedMode ? aeroPressureLevel : undefined, inverted: advancedMode ? aeroInverted : undefined, ...commonWater };
+                case "moka":
+                    return { method: "moka" as const, grind, ratio, roast, process, heatLevel: mokaHeatLevel, waterTempC: advancedMode ? mokaWaterTempC : undefined, ...commonWater };
+                case "cold_brew":
+                    return { method: "cold_brew" as const, grind, ratio, roast, process, totalTimeH: coldBrewTotalTimeH, fridgeTempC: coldBrewFridgeTempC, ...commonWater };
+                default:
+                    return { method: "espresso" as const, grind, ratio, roast, process, temperatureC: advancedMode && useTemperature ? temperature : undefined, pressureBar: advancedMode && usePressure ? pressure : undefined, ...commonWater };
+            }
+        })();
 
         const newRecipe: SavedRecipe = {
             id: crypto.randomUUID(),
             name: trimmedName,
             locale,
-            grind,
-            ratio,
-            roast,
-            process,
-            temperature: advancedMode && useTemperature ? temperature : undefined,
-            pressure: advancedMode && usePressure ? pressure : undefined,
-            waterGH: advancedMode && useWater ? waterGH : undefined,
-            waterKH: advancedMode && useWater ? waterKH : undefined,
+            method,
+            params,
             createdAt: new Date().toISOString(),
         };
 
-        const updatedRecipes = [newRecipe, ...savedRecipes];
-        setSavedRecipes(updatedRecipes);
-        window.localStorage.setItem("coffee-sim-recipes", JSON.stringify(updatedRecipes));
+        const updated = [newRecipe, ...savedRecipes];
+        dispatch({ type: "SET_SAVED_RECIPES", recipes: updated });
+        window.localStorage.setItem("coffee-sim-recipes", JSON.stringify(updated));
 
-        setSaveMessage(locale === "es" ? "Receta guardada" : "Recipe saved");
-        window.setTimeout(() => setSaveMessage(""), 2000);
-    };
-    const styleLabels: Record<string, string> = {
-        Ristretto: dict.style_ristretto,
-        Espresso: dict.style_espresso,
-        Lungo: dict.style_lungo,
+        dispatch({ type: "SET_SAVE_MESSAGE", value: locale === "es" ? "Receta guardada" : "Recipe saved" });
+        window.setTimeout(() => dispatch({ type: "SET_SAVE_MESSAGE", value: "" }), 2000);
     };
 
-    const roastLabels: Record<string, string> = {
-        claro: dict.roast_light,
-        medio: dict.roast_medium,
-        oscuro: dict.roast_dark,
+    const handleLoadRecipe = (recipe: SavedRecipe) => {
+        const p = recipe.params;
+        const qs = new URLSearchParams();
+        qs.set("method", recipe.method);
+        qs.set("grind", String(p.grind));
+        qs.set("ratio", p.ratio.toFixed(1));
+        qs.set("roast", p.roast);
+        qs.set("process", p.process);
+        qs.set("name", recipe.name);
+
+        if ("temperatureC"  in p && p.temperatureC  !== undefined) qs.set("temperature",  String(p.temperatureC));
+        if ("pressureBar"   in p && p.pressureBar   !== undefined) qs.set("pressure",     String(p.pressureBar));
+        if ("totalTimeS"    in p && p.totalTimeS    !== undefined) qs.set("totalTimeS",   String(p.totalTimeS));
+        if ("totalTimeH"    in p && p.totalTimeH    !== undefined) qs.set("totalTimeH",   String(p.totalTimeH));
+        if ("heatLevel"     in p && p.heatLevel     !== undefined) qs.set("heatLevel",    String(p.heatLevel));
+        if ("pressureLevel" in p && p.pressureLevel !== undefined) qs.set("pressureLevel",String(p.pressureLevel));
+        if ("inverted"      in p && p.inverted      !== undefined) qs.set("inverted",     String(p.inverted));
+        if ("fridgeTempC"   in p && p.fridgeTempC   !== undefined) qs.set("fridgeTempC",  String(p.fridgeTempC));
+        if ("waterTempC"    in p && p.waterTempC    !== undefined) qs.set("waterTempC",   String(p.waterTempC));
+        if (p.waterGH !== undefined) qs.set("waterGH", String(p.waterGH));
+        if (p.waterKH !== undefined) qs.set("waterKH", String(p.waterKH));
+
+        router.push(`/${locale}?${qs.toString()}`);
     };
 
-    const processLabels: Record<string, string> = {
-        lavado: dict.process_washed,
-        natural: dict.process_natural,
-        honey: dict.process_honey,
-    };
-    const stateDescriptions: Record<string, string> = {
-        Subextraído: dict.state_desc_sub,
-        Balanceado: dict.state_desc_bal,
-        Sobreextraído: dict.state_desc_over,
-    };
-
-    const stateDescription = stateDescriptions[result.state] ?? "";
-    const roastLabel = roastLabels[roast] ?? roast;
-    const processLabel = processLabels[process] ?? process;
-
-    const styleLabel = styleLabels[result.styleHint] ?? result.styleHint;
+    // ── Render ───────────────────────────────────────────────────────────────
     return (
         <main className="min-h-screen bg-neutral-950 text-neutral-50">
-            <section className="mx-auto max-w-screen-2xl px-6 pt-16 pb-10">
-                <div className="max-w-8xl">
-                    <p className="text-sm text-neutral-400">{dict.heroTagline}</p>
-
-                    <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
-                        {recipeName ? (
-                            <>
-                                <span className="block">{recipeName}</span>
-                                <span className="mt-3 block text-base text-neutral-300 sm:text-lg">
-                                    {dict.espressoSimulation}
-                                </span>
-                            </>
-                        ) : (
-                            <>
-                                <span className="block">{dict.title}</span>
-                                <span className="block text-neutral-300">{dict.title2}</span>
-                                <span className="block text-neutral-300">{dict.title3}</span>
-                            </>
-                        )}
-                    </h1>
-
-                    <p className="mt-4 text-base text-neutral-300 sm:text-lg">{dict.subtitle}</p>
-
-                    <div className="mt-6 flex flex-wrap items-center gap-3">
-                        {[
-                            dict.chip_espresso,
-                            dict.chip_grind,
-                            dict.chip_ratio,
-                            dict.chip_roast,
-                            dict.chip_process,
-                        ].map((t) => (
-                            <span
-                                key={t}
-                                className="rounded-full border border-neutral-800 bg-neutral-900/40 px-3 py-1 text-xs text-neutral-200"
-                            >
-                                {t}
-                            </span>
-                        ))}
-
-                        <span className="ml-1 text-xs text-neutral-500">{dict.languageLabel}:</span>
-
-                        <button
-                            type="button"
-                            onClick={() => {
-                                const targetLocale = locale === "es" ? "en" : "es";
-                                const qs = searchParams.toString();
-                                window.location.href = `/${targetLocale}${qs ? `?${qs}` : ""}`;
-                            }}
-                            className="rounded-full border border-neutral-800 bg-neutral-900/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
-                        >
-                            {locale === "es" ? dict.lang_en : dict.lang_es}
-                        </button>
-                    </div>
-
-                    <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                            <a
-                                href="#simulador"
-                                className="inline-flex items-center justify-center rounded-xl bg-neutral-50 px-5 py-3 text-sm font-medium text-neutral-950 hover:bg-white"
-                            >
-                                {dict.tryNow}
-                            </a>
-                            <select
-                                value={method}
-                                onChange={(e) => setMethod(e.target.value)}
-                                className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-4 py-3 text-sm text-neutral-100 outline-none"
-                            >
-                                <option value="espresso">Espresso</option>
-                                <option value="v60">V60</option>
-                                <option value="french_press">French Press</option>
-                                <option value="aeropress">AeroPress</option>
-                                <option value="moka">Moka</option>
-                                <option value="cold_brew">Cold Brew</option>
-                            </select>
-
-
-                        </div>
-                        <div className="flex flex-col gap-2 sm:items-end">
-                            <button
-                                type="button"
-                                onClick={async () => {
-                                    const url = window.location.href;
-                                    await navigator.clipboard.writeText(url);
-                                    setCopied(true);
-                                    window.setTimeout(() => setCopied(false), 1500);
-                                }}
-                                className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
-                            >
-                                {copied ? dict.copied : dict.copyLink}
-                            </button>
-
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    placeholder={dict.recipeNamePlaceholder}
-                                    className="min-w-0 flex-1 rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 outline-none"
-                                    value={recipeName}
-                                    onChange={(e) => setRecipeName(e.target.value)}
-                                />
-
-                                <button
-                                    type="button"
-                                    onClick={handleSaveRecipe}
-                                    className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
-                                >
-                                    {dict.save}
-                                </button>
-                            </div>
-
-                            {saveMessage && (
-                                <p className="text-[11px] text-neutral-400">{saveMessage}</p>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <SimulatorHero
+                dict={dict}
+                locale={locale}
+                method={method}
+                setMethod={(m) => dispatch({ type: "SET_METHOD", method: m })}
+                searchParams={searchParams}
+                copied={copied}
+                setCopied={(v) => dispatch({ type: "SET_COPIED", value: v })}
+                recipeName={recipeName}
+                setRecipeName={(v) => dispatch({ type: "SET_RECIPE_NAME", value: v })}
+                handleSaveRecipe={handleSaveRecipe}
+                saveMessage={saveMessage}
+            />
 
             <section id="simulador" className="mx-auto w-full max-w-screen-2xl px-4 pb-20 lg:px-6">
                 <div className="grid w-full gap-6 lg:grid-cols-2">
-                    {/* Resultado */}
-                    <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                            <div >
-                                <h2 className="text-lg font-semibold">
-                                    {recipeName ? recipeName : dict.result}
-                                </h2>
-
-                                <p className="mt-1 text-sm text-neutral-400">
-                                    {dict.statusLabel}:{" "}
-                                    <span className="text-neutral-200">{stateLabel}</span>
-                                    <span className="text-neutral-500"> · </span>
-                                    {dict.styleLabel}:{" "}
-                                    <span className="text-neutral-200">{styleLabel}</span>
-                                </p>
-
-                                <p className="mt-2 text-xs text-neutral-500">
-                                    {result.styleHint === "Ristretto" && dict.style_ristretto_desc}
-                                    {result.styleHint === "Espresso" && dict.style_espresso_desc}
-                                    {result.styleHint === "Lungo" && dict.style_lungo_desc}
-                                </p>
-                            </div>
-
-
-                        </div>
-
-                        {recipeName ? (
-                            <div className="mt-4 rounded-2xl border border-neutral-800 bg-neutral-950/30 p-4">
-                                <div className="flex items-start justify-between gap-4">
-                                    <div>
-                                        <p className="text-sm font-semibold text-neutral-100">{recipeName}</p>
-                                        <p className="mt-1 text-xs text-neutral-400">
-                                            {styleLabel} · {roastLabel} · {processLabel}
-                                        </p>
-                                    </div>
-
-                                    <div className="text-right">
-                                        <p className="text-xs text-neutral-400">
-                                            {doseG}g → {result.beverageG}g ({fmtRatio(ratio)})
-                                        </p>
-                                        <p className="mt-1 text-xs text-neutral-300">{stateLabel}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : null}
-
-                        <div className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
-                            <div className="flex items-start justify-between gap-0 lg:gap-4">
-                                <div className="min-w-0">
-                                    <p className="text-sm text-neutral-300">{dict.flavorProfile}</p>
-                                    <p className="hidden lg:block mt-1 text-xs text-neutral-500">{dict.axesLabel}</p>
-                                </div>
-
-                                <div className="ml-auto flex items-start gap-0 text-left lg:gap-8 lg:text-right">
-                                    <div>
-                                        <p className="text-xs text-neutral-400">{dict.estimatedExtraction}</p>
-                                        <p className="text-sm text-neutral-200">
-                                            {Math.round(result.extraction)}/100
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <p className="text-xs text-neutral-300">
-                                            {doseG}g → {result.beverageG}g ({fmtRatio(ratio)})
-                                        </p>
-                                        <p className="mt-1 text-xs text-neutral-400 whitespace-nowrap">
-                                            {dict.estimatedTime}: {result.estimatedTimeS}s
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="mt-2">
-                                {/* mobile */}
-                                <div className="lg:hidden">
-                                    <div className="mb-2 flex items-center gap-3">
-                                        <span className="text-xs text-neutral-500">
-                                            {dict.hybridHelpLabel}
-                                        </span>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowHybridHelp(!showHybridHelp)}
-                                            className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
-                                        >
-                                            {showHybridHelp ? dict.hybridHelpHide : dict.hybridHelpShow}
-                                        </button>
-                                    </div>
-
-                                    {showHybridHelp && (
-                                        <div className="mb-4 rounded-xl border border-neutral-800 bg-neutral-950/40 p-4 text-xs text-neutral-300">
-                                            <p>{dict.mapHelpP1}</p>
-                                            <p className="mt-2">{dict.mapHelpP2}</p>
-                                            <p className="mt-2">{dict.mapHelpP3}</p>
-                                            <p className="mt-2">{dict.mapHelpP4}</p>
-
-                                            <div className="my-3 border-t border-neutral-800" />
-
-                                            <p>{dict.radarHelpP1}</p>
-                                            <p className="mt-2">{dict.radarHelpP2}</p>
-                                            <p className="mt-2">{dict.radarHelpP3}</p>
-                                            <p className="mt-2">{dict.radarHelpP4}</p>
-                                        </div>
-                                    )}
-
-                                    <HybridRadarMap
-                                        axes={result.axes}
-                                        grind={grind}
-                                        ratio={ratio}
-                                        state={result.state}
-                                        temperatureC={advancedMode && useTemperature ? temperature : undefined}
-                                        pressureBar={advancedMode && usePressure ? pressure : undefined}
-                                        dict={dict}
-                                    />
-                                </div>
-
-                                {/* desktop */}
-                                <div className="hidden lg:grid lg:grid-cols-2 lg:gap-6">
-                                    <div className="flex flex-col">
-                                        <div className="mb-2 flex items-center justify-between">
-                                            <span className="text-xs text-neutral-500">{dict.mapHelpLabel}</span>
-
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowMapHelp(!showMapHelp)}
-                                                className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
-                                            >
-                                                {showMapHelp ? dict.mapHelpHide : dict.mapHelpShow}
-                                            </button>
-                                        </div>
-
-                                        {showMapHelp && (
-                                            <div className="mb-4 rounded-xl border border-neutral-800 bg-neutral-950/40 p-4 text-xs text-neutral-300">
-                                                <p>{dict.mapHelpP1}</p>
-                                                <p className="mt-2">{dict.mapHelpP2}</p>
-                                                <p className="mt-2">{dict.mapHelpP3}</p>
-                                                <p className="mt-2">{dict.mapHelpP4}</p>
-                                            </div>
-                                        )}
-
-                                        <ExtractionMap
-                                            grind={grind}
-                                            ratio={ratio}
-                                            state={result.state}
-                                            styleHint={result.styleHint}
-                                            temperatureC={advancedMode && useTemperature ? temperature : undefined}
-                                            pressureBar={advancedMode && usePressure ? pressure : undefined}
-                                            dict={dict}
-                                        />
-                                    </div>
-
-                                    <div className="flex flex-col">
-                                        <div className="mb-2 flex items-center justify-between">
-                                            <span className="text-xs text-neutral-500">{dict.radarHelpLabel}</span>
-
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowRadarHelp(!showRadarHelp)}
-                                                className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
-                                            >
-                                                {showRadarHelp ? dict.radarHelpHide : dict.radarHelpShow}
-                                            </button>
-                                        </div>
-
-                                        {showRadarHelp && (
-                                            <div className="mb-4 rounded-xl border border-neutral-800 bg-neutral-950/40 p-4 text-xs text-neutral-300">
-                                                <p>{dict.radarHelpP1}</p>
-                                                <p className="mt-2">{dict.radarHelpP2}</p>
-                                                <p className="mt-2">{dict.radarHelpP3}</p>
-                                                <p className="mt-2">{dict.radarHelpP4}</p>
-                                            </div>
-                                        )}
-
-                                        <FlavorRadar axes={result.axes} dict={dict} />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <p className="mt-2 min-h-[4em] text-[11px] leading-[1.3] text-neutral-400 lg:mt-4 lg:min-h-0 lg:text-xs">
-                                {stateDescription}
-                            </p>
-                        </div>
-                        <p className="hidden lg:block mt-6 text-xs text-neutral-500">{dict.note}</p>
-                        <button
-                            type="button"
-                            onClick={() => setShowEngineInfo(!showEngineInfo)}
-                            className="hidden lg:block mt-2 rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
-                        >
-                            {showEngineInfo ? dict.engineHide : dict.engineExplain}
-                        </button>
-                        {showEngineInfo && (
-                            <div className="mt-4 rounded-xl border border-neutral-800 bg-neutral-950/40 p-4 text-xs text-neutral-300">
-                                <div className="mb-4 grid grid-cols-2 gap-2 text-[10px] text-neutral-400 sm:grid-cols-4">
-                                    <div className="rounded-lg border border-neutral-800 bg-neutral-950/50 px-2 py-1.5 text-center">
-                                        <p className="text-neutral-200">8</p>
-                                        <p>{locale === "es" ? "variables" : "variables"}</p>
-                                    </div>
-
-                                    <div className="rounded-lg border border-neutral-800 bg-neutral-950/50 px-2 py-1.5 text-center">
-                                        <p className="text-neutral-200">5</p>
-                                        <p>{locale === "es" ? "ejes sensoriales" : "sensory axes"}</p>
-                                    </div>
-
-                                    <div className="rounded-lg border border-neutral-800 bg-neutral-950/50 px-2 py-1.5 text-center">
-                                        <p className="text-neutral-200">0–100</p>
-                                        <p>{locale === "es" ? "índice extracción" : "extraction index"}</p>
-                                    </div>
-
-                                    <div className="rounded-lg border border-neutral-800 bg-neutral-950/50 px-2 py-1.5 text-center">
-                                        <p className="text-neutral-200">AI</p>
-                                        <p>{locale === "es" ? "ajuste iterativo" : "iterative tuning"}</p>
-                                    </div>
-                                </div>
-                                <div className="mb-4 flex items-start justify-between gap-3">
-                                    <div>
-                                        <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-500">
-                                            {locale === "es" ? "Simulation Engine" : "Simulation Engine"}
-                                        </p>
-                                        <p className="mt-1 text-sm font-medium text-neutral-100">
-                                            {locale === "es" ? "Descripción técnica" : "Technical overview"}
-                                        </p>
-                                    </div>
-
-                                    <span className="rounded-full border border-neutral-800 bg-neutral-900/60 px-2.5 py-1 text-[10px] uppercase tracking-wide text-neutral-300">
-                                        {locale === "es" ? "Heuristic model v1" : "Heuristic model v1"}
-                                    </span>
-                                </div>
-                                <div className="space-y-3 text-[11px] leading-relaxed">
-                                    <div>
-                                        <p className="font-medium text-neutral-200">
-                                            {locale === "es" ? "Input normalization" : "Input normalization"}
-                                        </p>
-                                        <p className="text-neutral-400">{dict.engineInfo1}</p>
-                                    </div>
-
-                                    <div>
-                                        <p className="font-medium text-neutral-200">
-                                            {locale === "es" ? "Primary extraction drivers" : "Primary extraction drivers"}
-                                        </p>
-                                        <p className="text-neutral-400">{dict.engineInfo2}</p>
-                                    </div>
-
-                                    <div>
-                                        <p className="font-medium text-neutral-200">
-                                            {locale === "es" ? "Coffee-dependent modulators" : "Coffee-dependent modulators"}
-                                        </p>
-                                        <p className="text-neutral-400">{dict.engineInfo3}</p>
-                                    </div>
-
-                                    <div>
-                                        <p className="font-medium text-neutral-200">
-                                            {locale === "es" ? "Advanced parameters" : "Advanced parameters"}
-                                        </p>
-                                        <p className="text-neutral-400">{dict.engineInfo4}</p>
-                                    </div>
-
-                                    <div>
-                                        <p className="font-medium text-neutral-200">
-                                            {locale === "es" ? "Sensory projection" : "Sensory projection"}
-                                        </p>
-                                        <p className="text-neutral-400">{dict.engineInfo5}</p>
-                                    </div>
-                                    <div>
-                                        <p className="font-medium text-neutral-200">
-                                            {locale === "es" ? "Sensory axes" : "Sensory axes"}
-                                        </p>
-                                        <p className="text-neutral-400">{dict.engineInfo6}</p>
-                                    </div>
-
-                                    <div>
-                                        <p className="font-medium text-neutral-200">
-                                            {locale === "es" ? "Probabilistic output model" : "Probabilistic output model"}
-                                        </p>
-                                        <p className="text-neutral-400">{dict.engineInfo7}</p>
-                                    </div>
-
-                                    <div>
-                                        <p className="font-medium text-neutral-200">
-                                            {locale === "es" ? "AI-assisted calibration" : "AI-assisted calibration"}
-                                        </p>
-                                        <p className="text-neutral-400">{dict.engineInfo8}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Controles */}
-                    <div className="rounded-2xl border border-neutral-600 bg-neutral-900/40 px-4 py-3 lg:p-6">
-                        <div className="flex items-center gap-3">
-                            <h2 className="text-lg font-semibold">{dict.controls}</h2>
-
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    const next = !advancedMode;
-                                    setAdvancedMode(next);
-
-                                    if (next) {
-                                        setUseTemperature(true);
-                                        setUsePressure(true);
-                                        setUseWater(true);
-                                    }
-                                }}
-                                className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
-                            >
-                                {advancedMode ? dict.advancedHide : dict.advancedShow}
-                            </button>
-                        </div>
-
-                        <p className="hidden lg:block mt-1 text-sm text-neutral-400">{dict.controlsDescription}</p>
-
-                        <div className="mt-4 space-y-4 lg:mt-6 lg:space-y-5">
-                            <div className="grid grid-cols-2 gap-2 lg:gap-4">
-                                {/* Molienda */}
-                                <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
-                                    <div className="flex items-center justify-between text-[11px]">
-                                        <span className="text-neutral-200">{dict.grindLabel}</span>
-                                        <span className="text-neutral-200">{grind}/100</span>
-                                    </div>
-                                    <input
-                                        className="mt-1 w-full accent-neutral-200"
-                                        type="range"
-                                        min={0}
-                                        max={100}
-                                        value={grind}
-                                        onChange={(e) => setGrind(Number(e.target.value))}
-                                    />
-                                    <div className="flex justify-between text-[10px] text-neutral-500">
-                                        <span>{dict.grindCoarse}</span>
-                                        <span>{dict.grindFine}</span>
-                                    </div>
-                                </div>
-
-                                {/* Ratio */}
-                                <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
-                                    <div className="flex items-center justify-between text-[11px]">
-                                        <span className="text-neutral-200">{dict.ratioLabel}</span>
-                                        <span className="text-neutral-200">{fmtRatio(ratio)}</span>
-                                    </div>
-                                    <input
-                                        className="mt-1 w-full accent-neutral-200"
-                                        type="range"
-                                        min={1.0}
-                                        max={3.2}
-                                        step={0.1}
-                                        value={ratio}
-                                        onChange={(e) => setRatio(Number(e.target.value))}
-                                    />
-                                    <div className="flex justify-between text-[10px] text-neutral-500">
-                                        <span>{dict.ratioShort}</span>
-                                        <span>{dict.ratioLong}</span>
-                                    </div>
-                                </div>
-
-                                {/* Temperatura */}
-                                {advancedMode && useTemperature && (
-                                    <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
-                                        <div className="flex items-center justify-between text-[11px]">
-                                            <span className="text-neutral-200">{dict.temperatureLabel}</span>
-                                            <span className="text-neutral-200">{temperature}°C</span>
-                                        </div>
-
-                                        <input
-                                            className="mt-1 w-full accent-neutral-200"
-                                            type="range"
-                                            min={88}
-                                            max={98}
-                                            step={1}
-                                            value={temperature}
-                                            onChange={(e) => setTemperature(Number(e.target.value))}
-                                        />
-
-                                        <div className="flex justify-between text-[10px] text-neutral-500">
-                                            <span>88°C</span>
-                                            <span>98°C</span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Presión */}
-                                {advancedMode && usePressure && (
-                                    <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
-                                        <div className="flex items-center justify-between text-[11px]">
-                                            <span className="text-neutral-200">{dict.pressureLabel}</span>
-                                            <span className="text-neutral-200">{pressure} bar</span>
-                                        </div>
-
-                                        <input
-                                            className="mt-1 w-full accent-neutral-200"
-                                            type="range"
-                                            min={6}
-                                            max={10}
-                                            step={0.5}
-                                            value={pressure}
-                                            onChange={(e) => setPressure(Number(e.target.value))}
-                                        />
-
-                                        <div className="flex justify-between text-[10px] text-neutral-500">
-                                            <span>6 bar</span>
-                                            <span>10 bar</span>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Agua */}
-                            {advancedMode && useWater && (
-                                <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
-                                    <div className="flex items-center justify-between text-[11px]">
-                                        <span className="text-neutral-200">{dict.waterLabel}</span>
-                                        <span className="text-neutral-200">
-                                            GH {waterGH} · KH {waterKH}
-                                        </span>
-                                    </div>
-
-                                    <div className="mt-2 grid grid-cols-2 gap-2">
-                                        <div>
-                                            <div className="flex items-center justify-between text-[11px]">
-                                                <span className="text-neutral-400">GH</span>
-                                                <span className="text-neutral-400">{waterGH}</span>
-                                            </div>
-
-                                            <input
-                                                className="mt-1 w-full accent-neutral-200"
-                                                type="range"
-                                                min={1}
-                                                max={12}
-                                                step={1}
-                                                value={waterGH}
-                                                onChange={(e) => setWaterGH(Number(e.target.value))}
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <div className="flex items-center justify-between text-[11px]">
-                                                <span className="text-neutral-400">KH</span>
-                                                <span className="text-neutral-400">{waterKH}</span>
-                                            </div>
-
-                                            <input
-                                                className="mt-1 w-full accent-neutral-200"
-                                                type="range"
-                                                min={0}
-                                                max={8}
-                                                step={1}
-                                                value={waterKH}
-                                                onChange={(e) => setWaterKH(Number(e.target.value))}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Tipo de café */}
-                            <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
-                                <div className="flex items-center justify-between text-[11px]">
-                                    <span className="text-sm font-medium">{dict.coffeeType}</span>
-                                    <span className="text-xs text-neutral-200">
-                                        {roastLabel} · {processLabel}
-                                    </span>
-                                </div>
-
-                                <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                                    <label className="text-xs text-neutral-400">
-                                        {dict.roastLabel}
-                                        <select
-                                            className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-100 outline-none"
-                                            value={roast}
-                                            onChange={(e) => setRoast(e.target.value as Roast)}
-                                        >
-                                            <option value="claro">{dict.roast_light}</option>
-                                            <option value="medio">{dict.roast_medium}</option>
-                                            <option value="oscuro">{dict.roast_dark}</option>
-                                        </select>
-                                    </label>
-
-                                    <label className="text-xs text-neutral-400">
-                                        {dict.processLabel}
-                                        <select
-                                            className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-100 outline-none"
-                                            value={process}
-                                            onChange={(e) => setProcess(e.target.value as Process)}
-                                        >
-                                            <option value="lavado">{dict.process_washed}</option>
-                                            <option value="natural">{dict.process_natural}</option>
-                                            <option value="honey">{dict.process_honey}</option>
-                                        </select>
-                                    </label>
-                                </div>
-
-                                <p className="mt-3 text-xs text-neutral-500">{dict.roastAdvice}</p>
-                            </div>
-
-                            {/* Presets rápidos */}
-                            <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
-                                <p className="mb-3 text-xs text-neutral-400">{dict.quickPresets}</p>
-                                <div className="flex flex-wrap gap-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setGrind(70);
-                                            setRatio(1.6);
-                                            setRoast("claro");
-                                            setProcess("lavado");
-                                        }}
-                                        className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800"
-                                    >
-                                        {dict.preset_lightRistretto}
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setGrind(60);
-                                            setRatio(2.0);
-                                            setRoast("medio");
-                                            setProcess("lavado");
-                                        }}
-                                        className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800"
-                                    >
-                                        {dict.preset_classicEspresso}
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setGrind(50);
-                                            setRatio(2.8);
-                                            setRoast("medio");
-                                            setProcess("natural");
-                                        }}
-                                        className="rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs transition hover:bg-neutral-800"
-                                    >
-                                        {dict.preset_naturalLungo}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4">
-                                <div className="flex items-center justify-between gap-3">
-                                    <p className="text-sm font-medium">
-                                        {dict.savedRecipes}
-                                    </p>
-
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs text-neutral-500">{savedRecipes.length}</span>
-
-                                        {savedRecipes.length > 0 && (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setSavedRecipes([]);
-                                                    window.localStorage.removeItem("coffee-sim-recipes");
-                                                }}
-                                                className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-[11px] text-neutral-200 hover:bg-neutral-900"
-                                            >
-                                                {dict.clearAllRecipes}
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {savedRecipes.length === 0 ? (
-                                    <p className="mt-3 text-xs text-neutral-500">
-                                        {dict.noSavedRecipes}
-                                    </p>
-                                ) : (
-                                    <div className="mt-3 max-h-72 space-y-2 overflow-y-auto pr-1">
-                                        {savedRecipes.map((recipe) => (
-                                            <div
-                                                key={recipe.id}
-                                                className="rounded-lg border border-neutral-800 bg-neutral-900/50 px-3 py-2"
-                                            >
-                                                <div className="flex items-center justify-between gap-3">
-                                                    <div>
-                                                        <p className="text-xs font-medium text-neutral-200">
-                                                            {recipe.name}
-                                                        </p>
-                                                        <p className="mt-1 text-[11px] text-neutral-500">
-                                                            {recipe.grind}/100 · 1:{recipe.ratio.toFixed(1)} · {recipe.roast} · {recipe.process}
-                                                        </p>
-                                                    </div>
-
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            const qs = new URLSearchParams();
-                                                            qs.set("grind", String(recipe.grind));
-                                                            qs.set("ratio", recipe.ratio.toFixed(1));
-                                                            qs.set("roast", recipe.roast);
-                                                            qs.set("process", recipe.process);
-                                                            qs.set("name", recipe.name);
-
-                                                            if (recipe.temperature !== undefined) {
-                                                                qs.set("temperature", String(recipe.temperature));
-                                                            }
-                                                            if (recipe.pressure !== undefined) {
-                                                                qs.set("pressure", String(recipe.pressure));
-                                                            }
-                                                            if (recipe.waterGH !== undefined) {
-                                                                qs.set("waterGH", String(recipe.waterGH));
-                                                            }
-                                                            if (recipe.waterKH !== undefined) {
-                                                                qs.set("waterKH", String(recipe.waterKH));
-                                                            }
-
-                                                            router.push(`/${locale}?${qs.toString()}`);
-                                                        }}
-                                                        className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-[11px] text-neutral-200 hover:bg-neutral-900"
-                                                    >
-                                                        {dict.loadRecipe}
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            const updated = savedRecipes.filter((r) => r.id !== recipe.id);
-                                                            setSavedRecipes(updated);
-                                                            window.localStorage.setItem("coffee-sim-recipes", JSON.stringify(updated));
-                                                        }}
-                                                        className="ml-2 rounded-lg border border-neutral-800 bg-neutral-950/40 px-2.5 py-1 text-[11px] text-neutral-200 hover:bg-neutral-900"
-                                                    >
-                                                        {dict.deleteRecipe}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+                    <SimulatorResultPanel
+                        dict={dict}
+                        locale={locale}
+                        recipeName={recipeName}
+                        stateLabel={stateLabel}
+                        styleLabel={styleLabel}
+                        roastLabel={roastLabel}
+                        processLabel={processLabel}
+                        stateDescription={stateDescription}
+                        result={result}
+                        ratio={ratio}
+                        grind={grind}
+                        doseG={doseG}
+                        advancedMode={advancedMode}
+                        useTemperature={useTemperature}
+                        usePressure={usePressure}
+                        temperature={temperature}
+                        pressure={pressure}
+                        showMapHelp={showMapHelp}
+                        setShowMapHelp={(v) => dispatch({ type: "SET_SHOW_MAP_HELP", value: v })}
+                        showRadarHelp={showRadarHelp}
+                        setShowRadarHelp={(v) => dispatch({ type: "SET_SHOW_RADAR_HELP", value: v })}
+                        showHybridHelp={showHybridHelp}
+                        setShowHybridHelp={(v) => dispatch({ type: "SET_SHOW_HYBRID_HELP", value: v })}
+                        showEngineInfo={showEngineInfo}
+                        setShowEngineInfo={(v) => dispatch({ type: "SET_SHOW_ENGINE_INFO", value: v })}
+                        method={method}
+                    />
+
+                    <SimulatorControlsPanel
+                        dict={dict}
+                        locale={locale}
+                        method={method}
+                        advancedMode={advancedMode}
+                        setAdvancedMode={(v) => dispatch({ type: "SET_ADVANCED_MODE", value: v })}
+                        useTemperature={useTemperature}
+                        setUseTemperature={(v) => dispatch({ type: "SET_USE_TEMPERATURE", value: v })}
+                        usePressure={usePressure}
+                        setUsePressure={(v) => dispatch({ type: "SET_USE_PRESSURE", value: v })}
+                        useWater={useWater}
+                        setUseWater={(v) => dispatch({ type: "SET_USE_WATER", value: v })}
+                        grind={grind}
+                        setGrind={(v) => dispatch({ type: "SET_GRIND", value: v })}
+                        ratio={ratio}
+                        setRatio={(v) => dispatch({ type: "SET_RATIO", value: v })}
+                        temperature={temperature}
+                        setTemperature={(v) => dispatch({ type: "SET_TEMPERATURE", value: v })}
+                        pressure={pressure}
+                        setPressure={(v) => dispatch({ type: "SET_PRESSURE", value: v })}
+                        waterGH={waterGH}
+                        setWaterGH={(v) => dispatch({ type: "SET_WATER_GH", value: v })}
+                        waterKH={waterKH}
+                        setWaterKH={(v) => dispatch({ type: "SET_WATER_KH", value: v })}
+                        roast={roast}
+                        setRoast={(v) => dispatch({ type: "SET_ROAST", value: v })}
+                        process={process}
+                        setProcess={(v) => dispatch({ type: "SET_PROCESS", value: v })}
+                        roastLabel={roastLabel}
+                        processLabel={processLabel}
+                        savedRecipes={savedRecipes}
+                        setSavedRecipes={(recipes) => dispatch({ type: "SET_SAVED_RECIPES", recipes })}
+                        onLoadRecipe={handleLoadRecipe}
+                        v60TotalTimeS={v60TotalTimeS}
+                        setV60TotalTimeS={(v) => dispatch({ type: "SET_V60_TOTAL_TIME", value: v })}
+                        fpTotalTimeS={fpTotalTimeS}
+                        setFpTotalTimeS={(v) => dispatch({ type: "SET_FP_TOTAL_TIME", value: v })}
+                        aeroTotalTimeS={aeroTotalTimeS}
+                        setAeroTotalTimeS={(v) => dispatch({ type: "SET_AERO_TOTAL_TIME", value: v })}
+                        aeroPressureLevel={aeroPressureLevel}
+                        setAeroPressureLevel={(v) => dispatch({ type: "SET_AERO_PRESSURE_LEVEL", value: v })}
+                        aeroInverted={aeroInverted}
+                        setAeroInverted={(v) => dispatch({ type: "SET_AERO_INVERTED", value: v })}
+                        mokaHeatLevel={mokaHeatLevel}
+                        setMokaHeatLevel={(v) => dispatch({ type: "SET_MOKA_HEAT_LEVEL", value: v })}
+                        mokaWaterTempC={mokaWaterTempC}
+                        setMokaWaterTempC={(v) => dispatch({ type: "SET_MOKA_WATER_TEMP", value: v })}
+                        coldBrewTotalTimeH={coldBrewTotalTimeH}
+                        setColdBrewTotalTimeH={(v) => dispatch({ type: "SET_COLD_BREW_TOTAL_TIME_H", value: v })}
+                        coldBrewFridgeTempC={coldBrewFridgeTempC}
+                        setColdBrewFridgeTempC={(v) => dispatch({ type: "SET_COLD_BREW_FRIDGE_TEMP", value: v })}
+                    />
                 </div>
             </section>
         </main>
