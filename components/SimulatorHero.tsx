@@ -57,11 +57,12 @@ export default function SimulatorHero({
 
                 <div className="mt-6 flex flex-wrap items-center gap-3">
                     {[
-                        dict.chip_espresso,
                         dict.chip_grind,
                         dict.chip_ratio,
                         dict.chip_roast,
                         dict.chip_process,
+                        dict.chip_temperature,
+                        dict.chip_water,
                     ].map((t) => (
                         <span
                             key={t}
