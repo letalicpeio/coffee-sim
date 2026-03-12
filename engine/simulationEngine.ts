@@ -99,6 +99,7 @@ export function simulateCoffee(
       const cbInput: ColdBrewInputs = {
         grind: input.grind,
         ratio: input.ratio,
+        doseG: input.doseG,
         totalTimeH: input.totalTimeH ?? 16,
         roast: input.roast,
         process: input.process,

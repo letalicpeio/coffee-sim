@@ -3,6 +3,7 @@ import type { Roast, Process, FlavorAxes } from "./espressoEngine";
 export type ColdBrewInputs = {
   grind: number;          // 0-100, grueso típico 30-60
   ratio: number;          // 4-10 (agua g / café g)
+  doseG: number;          // gramos de café
   totalTimeH: number;     // 8-24 horas
   roast: Roast;
   process: Process;
@@ -98,7 +99,7 @@ export function simulateColdBrew(input: ColdBrewInputs): ColdBrewResult {
   const extraction = computeExtraction(grind, ratio, totalTimeH, fridgeTempC, waterGH);
   const estimatedTimeS = totalTimeH * 3600;
   const state = getExtractionState(extraction, input.roast);
-  const beverageG = ratio * 10;
+  const beverageG = ratio * input.doseG;
   const axes = computeFlavorAxes(extraction, ratio, input.roast, input.process);
 
   return {
