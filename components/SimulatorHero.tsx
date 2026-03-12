@@ -1,13 +1,15 @@
 "use client";
 
 import type { Dict } from "../lib/getDictionary";
+import type { BrewMethod } from "./types/brew";
+import type { ReadonlyURLSearchParams } from "next/navigation";
 
 type Props = {
     dict: Dict;
     locale: "es" | "en";
-    method: string;
-    setMethod: (value: string) => void;
-    searchParams: URLSearchParams;
+    method: BrewMethod;
+    setMethod: (value: BrewMethod) => void;
+    searchParams: ReadonlyURLSearchParams;
     copied: boolean;
     setCopied: (value: boolean) => void;
     recipeName: string;
@@ -86,9 +88,15 @@ export default function SimulatorHero({
 
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        <a
+                            href="#simulador"
+                            className="inline-flex items-center justify-center rounded-xl bg-neutral-50 px-5 py-3 text-sm font-medium text-neutral-950 hover:bg-white"
+                        >
+                            {dict.tryNow}
+                        </a>
                         <select
                             value={method}
-                            onChange={(e) => setMethod(e.target.value)}
+                            onChange={(e) => setMethod(e.target.value as BrewMethod)}
                             className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-4 py-3 text-sm text-neutral-100 outline-none"
                         >
                             <option value="espresso">Espresso</option>
@@ -99,12 +107,7 @@ export default function SimulatorHero({
                             <option value="cold_brew">Cold Brew</option>
                         </select>
 
-                        <a
-                            href="#simulador"
-                            className="inline-flex items-center justify-center rounded-xl bg-neutral-50 px-5 py-3 text-sm font-medium text-neutral-950 hover:bg-white"
-                        >
-                            {dict.tryNow}
-                        </a>
+
                     </div>
 
                     <div className="flex flex-col gap-2 sm:items-end">

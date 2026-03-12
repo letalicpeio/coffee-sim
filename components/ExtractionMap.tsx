@@ -1,8 +1,10 @@
 type Props = {
   grind: number;
   ratio: number;
+  ratioMin?: number;
+  ratioMax?: number;
   state: string;
-  styleHint: string;
+  styleHint?: string;
   temperatureC?: number;
   pressureBar?: number;
   dict: any;
@@ -15,6 +17,8 @@ function clamp(n: number, min: number, max: number) {
 export default function ExtractionMap({
   grind,
   ratio,
+  ratioMin = 1.0,
+  ratioMax = 3.2,
   state,
   styleHint,
   temperatureC,
@@ -22,7 +26,7 @@ export default function ExtractionMap({
   dict,
 }: Props) {
   // Normalizamos a 0..1
-  const x = (clamp(ratio, 1.0, 3.2) - 1.0) / (3.2 - 1.0); // ratio corto->largo
+  const x = (clamp(ratio, ratioMin, ratioMax) - ratioMin) / (ratioMax - ratioMin); // ratio corto->largo
   const y = clamp(grind, 0, 100) / 100; // grueso->fino
 
   const tempN =
