@@ -34,7 +34,7 @@ function computeExtraction(
   const grindN = grind / 100;
   const ratioN = (ratio - 4) / 6;
   const timeN = (totalTimeH - 8) / 16;
-  const tempN = (fridgeTempC - 2) / 6;
+  const tempN = clamp((fridgeTempC - 2) / 6, 0, 1);
   const waterN = Math.min(waterGH / 12, 1);
 
   const extraction =

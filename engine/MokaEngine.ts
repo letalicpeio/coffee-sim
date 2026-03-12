@@ -38,7 +38,7 @@ function computeMokaExtraction(
   const grindN = grind / 100;
   const ratioN = (ratio - 5) / 5;
   const heatN = (heatLevel - 1) / 4;
-  const waterTempN = (waterTempC - 20) / 75;
+  const waterTempN = clamp((waterTempC - 20) / 75, 0, 1);
 
   return clamp(
     15 +

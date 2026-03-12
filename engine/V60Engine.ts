@@ -34,36 +34,44 @@ function computeV60Extraction(
   grind: number,
   ratio: number,
   temperatureC: number,
-  totalTimeS: number,
-  bloomTimeS: number
+  totalTimeS: number
+
 ): number {
   const grindN = grind / 100;
   const ratioN = (ratio - 10) / 10;
   const tempN = (temperatureC - 90) / 6;
   const timeN = Math.min(totalTimeS / 300, 1);
-  const bloomN = bloomTimeS / Math.max(totalTimeS, 1);
+
 
   return clamp(
     8 +
     grindN * 30 +
     ratioN * 18 +
     tempN * 10 +
-    timeN * 12 +
-    bloomN * 4
-  );
+    timeN * 12
+  )
 }
 
 function getExtractionState(
   extraction: number,
   roast: Roast
 ): V60Result["state"] {
-  const low = 38;
-  const high = roast === "claro" ? 70 : roast === "oscuro" ? 60 : 65;
+  let low = 38;
+  let high = 65;
+
+  if (roast === "claro") {
+    low = 40;
+    high = 70;
+  } else if (roast === "oscuro") {
+    low = 36;
+    high = 60;
+  }
 
   if (extraction < low) return "Subextraído";
   if (extraction > high) return "Sobreextraído";
   return "Balanceado";
 }
+
 
 function computeV60SensoryProfile(
   extraction: number,
@@ -72,13 +80,12 @@ function computeV60SensoryProfile(
   process: Process,
   temperatureC: number,
   totalTimeS: number,
-  bloomTimeS: number,
   waterGH: number,
   waterKH: number
 ): FlavorAxes {
   const ratioN = (ratio - 10) / 10;
   const tempN = (temperatureC - 90) / 6;
-  const bloomN = bloomTimeS / Math.max(totalTimeS, 1);
+
 
   let acidityBias = 0;
   let bitternessBias = 0;
@@ -134,11 +141,10 @@ function computeV60SensoryProfile(
 
   // Pour-over sweetness peaks around E=50; bloom improves sweetness
   const sweetnessBase = 15 + 55 * bell(E, 50, 15);
-  const bloomSweetnessBias = bloomN * 10;
   const ratioSweetnessBias = (0.5 - ratioN) * 8;
 
   const sweetness = clamp(
-    sweetnessBase + sweetnessBias + bloomSweetnessBias + ratioSweetnessBias + waterSweetnessBias
+    sweetnessBase + sweetnessBias + ratioSweetnessBias + waterSweetnessBias
   );
 
   // V60 body is lighter than espresso (no pressure); lower ratio = more body
@@ -170,8 +176,7 @@ export function simulateV60(input: V60Inputs): V60Result {
     grind,
     ratio,
     temperatureC,
-    totalTimeS,
-    bloomTimeS
+    totalTimeS
   );
 
   const state = getExtractionState(extraction, input.roast);
@@ -183,7 +188,6 @@ export function simulateV60(input: V60Inputs): V60Result {
     input.process,
     temperatureC,
     totalTimeS,
-    bloomTimeS,
     waterGH,
     waterKH
   );

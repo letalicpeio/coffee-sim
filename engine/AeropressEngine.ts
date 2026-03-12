@@ -162,7 +162,7 @@ export function simulateAeropress(input: AeropressInputs): AeropressResult {
   const ratio = clamp(input.ratio, 6, 15);
   const doseG = Math.max(1, input.doseG);
   const temperatureC = clamp(input.temperatureC, 80, 96);
-  const totalTimeS = Math.max(20, input.totalTimeS);
+  const totalTimeS = clamp(input.totalTimeS, 30, 120);
   const pressureLevel = Math.max(1, Math.min(5, input.pressureLevel ?? 3));
   const inverted = input.inverted ?? false;
   const waterGH = clamp(input.waterGH ?? 6, 1, 12);

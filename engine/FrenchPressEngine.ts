@@ -63,6 +63,7 @@ function getExtractionState(
 
 function computeFrenchPressSensoryProfile(
   extraction: number,
+  grind: number,
   ratio: number,
   roast: Roast,
   process: Process,
@@ -111,27 +112,29 @@ function computeFrenchPressSensoryProfile(
   const waterBodyBias = (ghN - 0.5) * 6;
   const waterSweetnessBias = (ghN - 0.5) * 5;
   const waterAcidityBias = -(khN * 8);
-
+  const grindN = grind / 100;
   const tempAcidityBias = (0.5 - tempN) * 8;
   const tempBitternessBias = (tempN - 0.5) * 6;
 
   // French Press: full immersion, no paper filter — very high body, lower acidity
   const ratioBodyBias = (0.5 - ratioN) * 18;
   const body = clamp(
-    25 + E * 0.45 + ratioBodyBias + bodyBias + waterBodyBias
+    35 + E * 0.50 + ratioBodyBias + bodyBias + waterBodyBias
   );
 
   const acidity = clamp(
-    70 - E * 0.65 + acidityBias + tempAcidityBias + waterAcidityBias
+    60 - E * 0.60 + acidityBias + tempAcidityBias + waterAcidityBias
   );
 
   const bitterness = clamp(
     (E - 50) * 0.85 + 20 + bitternessBias + tempBitternessBias
   );
 
-  const astringency = clamp(
-    (E - 55) * 0.75 + 12 + astringencyBias
-  );
+const grindAstringency = (1 - grindN) * 8;
+
+const astringency = clamp(
+  (E - 55) * 0.75 + 12 + astringencyBias + grindAstringency
+);
 
   // French Press sweetness peaks around E=48
   const sweetnessBase = 15 + 55 * bell(E, 48, 16);
@@ -170,6 +173,7 @@ export function simulateFrenchPress(input: FrenchPressInputs): FrenchPressResult
 
   const axes = computeFrenchPressSensoryProfile(
     extraction,
+    grind,
     ratio,
     input.roast,
     input.process,
