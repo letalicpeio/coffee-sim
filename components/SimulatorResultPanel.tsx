@@ -181,14 +181,14 @@ export default function SimulatorResultPanel({
                                 <p>{dict.mapHelpP1}</p>
                                 <p className="mt-2">{dict.mapHelpP2}</p>
                                 <p className="mt-2">{dict.mapHelpP3}</p>
-                                <p className="mt-2">{dict.mapHelpP4}</p>
+                                <p className="mt-2">{dict[`mapHelpP4_${method}`] ?? dict.mapHelpP4}</p>
 
                                 <div className="my-3 border-t border-neutral-800" />
 
                                 <p>{dict.radarHelpP1}</p>
                                 <p className="mt-2">{dict.radarHelpP2}</p>
                                 <p className="mt-2">{dict.radarHelpP3}</p>
-                                <p className="mt-2">{dict.radarHelpP4}</p>
+                                <p className="mt-2">{dict[`radarHelpP4_${method}`] ?? dict.radarHelpP4}</p>
                             </div>
                         )}
 
@@ -225,7 +225,7 @@ export default function SimulatorResultPanel({
                                     <p>{dict.mapHelpP1}</p>
                                     <p className="mt-2">{dict.mapHelpP2}</p>
                                     <p className="mt-2">{dict.mapHelpP3}</p>
-                                    <p className="mt-2">{dict.mapHelpP4}</p>
+                                    <p className="mt-2">{dict[`mapHelpP4_${method}`] ?? dict.mapHelpP4}</p>
                                 </div>
                             )}
 
@@ -272,7 +272,7 @@ export default function SimulatorResultPanel({
                                     <p>{dict.radarHelpP1}</p>
                                     <p className="mt-2">{dict.radarHelpP2}</p>
                                     <p className="mt-2">{dict.radarHelpP3}</p>
-                                    <p className="mt-2">{dict.radarHelpP4}</p>
+                                    <p className="mt-2">{dict[`radarHelpP4_${method}`] ?? dict.radarHelpP4}</p>
                                 </div>
                             )}
 
