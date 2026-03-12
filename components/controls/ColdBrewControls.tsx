@@ -72,7 +72,7 @@ export default function ColdBrewControls({
                 {/* Tiempo total */}
                 <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
                     <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-neutral-200">Tiempo total</span>
+                        <span className="text-neutral-200">{dict.totalTimeLabel}</span>
                         <span className="text-neutral-200">{coldBrewTotalTimeH}h</span>
                     </div>
                     <input
@@ -90,7 +90,7 @@ export default function ColdBrewControls({
                 {/* Temperatura nevera */}
                 <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
                     <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-neutral-200">Temp. nevera</span>
+                        <span className="text-neutral-200">{dict.fridgeTempLabel}</span>
                         <span className="text-neutral-200">{fridgeTempC}°C</span>
                     </div>
                     <input

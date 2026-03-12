@@ -94,7 +94,7 @@ export default function V60Controls({
                 {/* Tiempo total (básico) */}
                 <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
                     <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-neutral-200">Tiempo total</span>
+                        <span className="text-neutral-200">{dict.totalTimeLabel}</span>
                         <span className="text-neutral-200">{fmtTime(v60TotalTimeS)}</span>
                     </div>
                     <input

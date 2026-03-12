@@ -70,8 +70,8 @@ export default function MokaControls({
                 {/* Intensidad calor — SIEMPRE VISIBLE */}
                 <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
                     <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-neutral-200">Intensidad calor</span>
-                        <span className="text-neutral-200">Nivel {mokaHeatLevel}</span>
+                        <span className="text-neutral-200">{dict.heatIntensityLabel}</span>
+                        <span className="text-neutral-200">{dict.heatLevel} {mokaHeatLevel}</span>
                     </div>
                     <input
                         className="mt-1 w-full accent-neutral-200"
@@ -80,8 +80,8 @@ export default function MokaControls({
                         onChange={(e) => setMokaHeatLevel(Number(e.target.value))}
                     />
                     <div className="flex justify-between text-[10px] text-neutral-500">
-                        <span>Suave</span>
-                        <span>Fuerte</span>
+                        <span>{dict.heatSoft}</span>
+                        <span>{dict.heatStrong}</span>
                     </div>
                 </div>
 
@@ -89,7 +89,7 @@ export default function MokaControls({
                 {advancedMode && (
                     <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
                         <div className="flex items-center justify-between text-[11px]">
-                            <span className="text-neutral-200">Temp. agua inicial</span>
+                            <span className="text-neutral-200">{dict.initialWaterTempLabel}</span>
                             <span className="text-neutral-200">{mokaWaterTempC}°C</span>
                         </div>
                         <input

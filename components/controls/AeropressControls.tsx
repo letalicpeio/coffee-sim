@@ -94,7 +94,7 @@ export default function AeropressControls({
                 {/* Tiempo */}
                 <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
                     <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-neutral-200">Tiempo</span>
+                        <span className="text-neutral-200">{dict.brewTimeLabel}</span>
                         <span className="text-neutral-200">{aeroTotalTimeS}s</span>
                     </div>
                     <input
@@ -116,7 +116,7 @@ export default function AeropressControls({
                     {/* Presión */}
                     <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
                         <div className="flex items-center justify-between text-[11px]">
-                            <span className="text-neutral-200">Presión (1-5)</span>
+                            <span className="text-neutral-200">{dict.pressureLevelLabel}</span>
                             <span className="text-neutral-200">{aeroPressureLevel}</span>
                         </div>
                         <input
@@ -133,13 +133,13 @@ export default function AeropressControls({
 
                     {/* Toggle invertido */}
                     <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2 flex flex-col justify-center gap-2">
-                        <span className="text-[11px] text-neutral-200">Invertido</span>
+                        <span className="text-[11px] text-neutral-200">{dict.invertedLabel}</span>
                         <button
                             type="button"
                             onClick={() => setAeroInverted(!aeroInverted)}
                             className={`rounded-lg border border-neutral-700 px-3 py-1.5 text-xs transition hover:bg-neutral-800 ${aeroInverted ? "bg-neutral-700" : "bg-neutral-900"}`}
                         >
-                            {aeroInverted ? "Sí" : "No"}
+                            {aeroInverted ? dict.yes : dict.no}
                         </button>
                     </div>
                 </div>
