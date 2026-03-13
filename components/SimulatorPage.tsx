@@ -689,17 +689,6 @@ export default function SimulatorPage({
             <section id="simulador" className="mx-auto w-full max-w-screen-2xl px-4 pb-20 lg:px-6">
                 {/* ── Mobile layout: single merged card (hidden at md+) ─────────── */}
                 <div className="md:hidden flex flex-col gap-6">
-                    {/* Botón modo avanzado — debajo del selector de método */}
-                    <div>
-                        <button
-                            type="button"
-                            onClick={() => dispatch({ type: "SET_ADVANCED_MODE", value: !advancedMode })}
-                            className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
-                        >
-                            {advancedMode ? dict.advancedHide : dict.advancedShow}
-                        </button>
-                    </div>
-
                     <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 overflow-hidden">
                         <SimulatorResultPanel
                             slim

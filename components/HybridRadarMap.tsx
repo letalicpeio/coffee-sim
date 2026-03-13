@@ -93,6 +93,8 @@ function mapDotPosition(
  * Accepts one or two profiles. When two profiles are provided, both polygons
  * are overlaid on the same chart using their respective colors.
  */
+import { useId } from "react";
+
 export default function HybridRadarMap({
     profiles,
     dict,
@@ -102,6 +104,9 @@ export default function HybridRadarMap({
     dict: any;
     size?: number;
 }) {
+    const uid = useId().replace(/:/g, "");
+    const gradientId = `hybridZones-${uid}`;
+    const clipId = `hybridRadarClip-${uid}`;
     const labels: Array<[keyof Axes, string]> = [
         ["acidez",      dict.axis_acidity],
         ["dulzor",      dict.axis_sweetness],
@@ -141,14 +146,14 @@ export default function HybridRadarMap({
                 aria-label={dict.flavorRadar}
             >
                 <defs>
-                    <linearGradient id="hybridZones" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <linearGradient id={gradientId} x1="0%" y1="100%" x2="100%" y2="0%">
                         <stop offset="0%"   stopColor="rgba(96,165,250,1)" />
                         <stop offset="45%"  stopColor="rgba(167,243,208,0.20)" />
                         <stop offset="55%"  stopColor="rgba(167,243,208,0.20)" />
                         <stop offset="100%" stopColor="rgba(248,113,113,1)" />
                     </linearGradient>
 
-                    <clipPath id="hybridRadarClip">
+                    <clipPath id={clipId}>
                         <polygon points={grids[grids.length - 1]} />
                     </clipPath>
                 </defs>
@@ -157,8 +162,8 @@ export default function HybridRadarMap({
                 <rect
                     x={cx - outerR} y={cy - outerR}
                     width={outerR * 2} height={outerR * 2}
-                    fill="url(#hybridZones)"
-                    clipPath="url(#hybridRadarClip)"
+                    fill={`url(#${gradientId})`}
+                    clipPath={`url(#${clipId})`}
                 />
 
                 {/* grilla */}

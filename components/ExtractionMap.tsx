@@ -1,3 +1,5 @@
+import { useId } from "react";
+
 type Props = {
   grind: number;
   ratio: number;
@@ -25,6 +27,9 @@ export default function ExtractionMap({
   pressureBar,
   dict,
 }: Props) {
+  const uid = useId().replace(/:/g, "");
+  const gradientId = `extractionZones-${uid}`;
+
   // Normalizamos a 0..1
   const x = (clamp(ratio, ratioMin, ratioMax) - ratioMin) / (ratioMax - ratioMin); // ratio corto->largo
   const y = clamp(grind, 0, 100) / 100; // grueso->fino
@@ -89,7 +94,7 @@ export default function ExtractionMap({
       <div className="rounded-2xl border border-neutral-800 bg-neutral-950/40 p-3">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto">
           <defs>
-            <linearGradient id="extractionZones" x1="0%" y1="100%" x2="100%" y2="0%">
+            <linearGradient id={gradientId} x1="0%" y1="100%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="rgba(96,165,250,0.26)" />
               <stop offset="45%" stopColor="rgba(167,243,208,0.26)" />
               <stop offset="55%" stopColor="rgba(167,243,208,0.26)" />
@@ -106,7 +111,7 @@ export default function ExtractionMap({
             y={pad}
             width={W - pad * 2}
             height={H - pad * 2}
-            fill="url(#extractionZones)"
+            fill={`url(#${gradientId})`}
             rx="8"
           />
 
