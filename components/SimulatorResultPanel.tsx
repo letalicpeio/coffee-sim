@@ -50,6 +50,8 @@ type Props = {
     showEngineInfo: boolean;
     setShowEngineInfo: (value: boolean) => void;
     method: BrewMethod;
+    /** When true, renders without the outer card wrapper (used inside a shared mobile container). */
+    slim?: boolean;
 };
 
 function fmtRatio(r: number) {
@@ -88,9 +90,13 @@ export default function SimulatorResultPanel({
     showEngineInfo,
     setShowEngineInfo,
     method,
+    slim,
 }: Props) {
+    const outerCls = slim
+        ? "p-4"
+        : "rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6";
     return (
-        <div className="rounded-2xl rounded-b-none border border-neutral-800 bg-neutral-900/40 p-4 pb-2 lg:rounded-b-2xl lg:p-6">
+        <div className={outerCls}>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <h2 className="text-lg font-semibold">

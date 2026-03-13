@@ -58,6 +58,8 @@ type Props = {
     setColdBrewTotalTimeH: (value: number) => void;
     coldBrewFridgeTempC: number;
     setColdBrewFridgeTempC: (value: number) => void;
+    /** When true, renders without the outer card wrapper (used inside a shared mobile container). */
+    slim?: boolean;
 };
 
 export default function SimulatorControlsPanel({
@@ -96,9 +98,13 @@ export default function SimulatorControlsPanel({
     setColdBrewTotalTimeH,
     coldBrewFridgeTempC,
     setColdBrewFridgeTempC,
+    slim,
 }: Props) {
+    const outerCls = slim
+        ? "border-t border-neutral-800 px-4 py-3"
+        : "rounded-2xl border border-neutral-600 bg-neutral-900/40 px-4 py-3 lg:p-6";
     return (
-        <div className="rounded-2xl rounded-t-none border border-t-0 border-neutral-800 bg-neutral-900/40 px-4 py-3 lg:rounded-t-2xl lg:border-t lg:border-neutral-600 lg:p-6">
+        <div className={outerCls}>
             {/* Cabecera */}
             <div className="flex items-center gap-3">
                 <h2 className="text-lg font-semibold">{dict.controls}</h2>

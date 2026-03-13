@@ -666,9 +666,104 @@ export default function SimulatorPage({
             />
 
             <section id="simulador" className="mx-auto w-full max-w-screen-2xl px-4 pb-20 lg:px-6">
-                <div className="grid w-full gap-0 lg:gap-6 lg:grid-cols-2">
-                    <SimulatorResultPanel
+                {/* ── Mobile layout: single merged card (hidden at md+) ─────────── */}
+                <div className="md:hidden flex flex-col gap-6">
+                    <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 overflow-hidden">
+                        <SimulatorResultPanel
+                            slim
+                            dict={dict}
+                            recipeName={recipeName}
+                            stateLabel={stateLabel}
+                            styleLabel={styleLabel}
+                            roastLabel={roastLabel}
+                            processLabel={processLabel}
+                            stateDescription={stateDescription}
+                            result={result}
+                            ratio={ratio}
+                            grind={grind}
+                            doseG={doseG}
+                            advancedMode={advancedMode}
+                            useTemperature={useTemperature}
+                            usePressure={usePressure}
+                            temperature={temperature}
+                            pressure={pressure}
+                            showMapHelp={showMapHelp}
+                            setShowMapHelp={(v) => dispatch({ type: "SET_SHOW_MAP_HELP", value: v })}
+                            showRadarHelp={showRadarHelp}
+                            setShowRadarHelp={(v) => dispatch({ type: "SET_SHOW_RADAR_HELP", value: v })}
+                            showHybridHelp={showHybridHelp}
+                            setShowHybridHelp={(v) => dispatch({ type: "SET_SHOW_HYBRID_HELP", value: v })}
+                            showEngineInfo={showEngineInfo}
+                            setShowEngineInfo={(v) => dispatch({ type: "SET_SHOW_ENGINE_INFO", value: v })}
+                            method={method}
+                        />
+                        <SimulatorControlsPanel
+                            slim
+                            dict={dict}
+                            locale={locale}
+                            method={method}
+                            advancedMode={advancedMode}
+                            setAdvancedMode={(v) => dispatch({ type: "SET_ADVANCED_MODE", value: v })}
+                            useTemperature={useTemperature}
+                            setUseTemperature={(v) => dispatch({ type: "SET_USE_TEMPERATURE", value: v })}
+                            usePressure={usePressure}
+                            setUsePressure={(v) => dispatch({ type: "SET_USE_PRESSURE", value: v })}
+                            useWater={useWater}
+                            setUseWater={(v) => dispatch({ type: "SET_USE_WATER", value: v })}
+                            grind={grind}
+                            setGrind={(v) => dispatch({ type: "SET_GRIND", value: v })}
+                            ratio={ratio}
+                            setRatio={(v) => dispatch({ type: "SET_RATIO", value: v })}
+                            temperature={temperature}
+                            setTemperature={(v) => dispatch({ type: "SET_TEMPERATURE", value: v })}
+                            pressure={pressure}
+                            setPressure={(v) => dispatch({ type: "SET_PRESSURE", value: v })}
+                            waterGH={waterGH}
+                            setWaterGH={(v) => dispatch({ type: "SET_WATER_GH", value: v })}
+                            waterKH={waterKH}
+                            setWaterKH={(v) => dispatch({ type: "SET_WATER_KH", value: v })}
+                            roast={roast}
+                            setRoast={(v) => dispatch({ type: "SET_ROAST", value: v })}
+                            process={process}
+                            setProcess={(v) => dispatch({ type: "SET_PROCESS", value: v })}
+                            roastLabel={roastLabel}
+                            processLabel={processLabel}
+                            v60TotalTimeS={v60TotalTimeS}
+                            setV60TotalTimeS={(v) => dispatch({ type: "SET_V60_TOTAL_TIME", value: v })}
+                            fpTotalTimeS={fpTotalTimeS}
+                            setFpTotalTimeS={(v) => dispatch({ type: "SET_FP_TOTAL_TIME", value: v })}
+                            aeroTotalTimeS={aeroTotalTimeS}
+                            setAeroTotalTimeS={(v) => dispatch({ type: "SET_AERO_TOTAL_TIME", value: v })}
+                            aeroPressureLevel={aeroPressureLevel}
+                            setAeroPressureLevel={(v) => dispatch({ type: "SET_AERO_PRESSURE_LEVEL", value: v })}
+                            aeroInverted={aeroInverted}
+                            setAeroInverted={(v) => dispatch({ type: "SET_AERO_INVERTED", value: v })}
+                            mokaHeatLevel={mokaHeatLevel}
+                            setMokaHeatLevel={(v) => dispatch({ type: "SET_MOKA_HEAT_LEVEL", value: v })}
+                            mokaWaterTempC={mokaWaterTempC}
+                            setMokaWaterTempC={(v) => dispatch({ type: "SET_MOKA_WATER_TEMP", value: v })}
+                            coldBrewTotalTimeH={coldBrewTotalTimeH}
+                            setColdBrewTotalTimeH={(v) => dispatch({ type: "SET_COLD_BREW_TOTAL_TIME_H", value: v })}
+                            coldBrewFridgeTempC={coldBrewFridgeTempC}
+                            setColdBrewFridgeTempC={(v) => dispatch({ type: "SET_COLD_BREW_FRIDGE_TEMP", value: v })}
+                        />
+                    </div>
 
+                    <RecipeLibraryPanel
+                        dict={dict}
+                        recipes={savedRecipes}
+                        locale={locale}
+                        onLoadRecipe={handleLoadRecipe}
+                        onDeleteRecipe={handleDeleteRecipe}
+                        onClearAll={handleClearAll}
+                        selectedIds={compareRecipes.map((r) => r.id)}
+                        onToggleSelect={handleToggleCompare}
+                    />
+                </div>
+
+                {/* ── Desktop layout: separate cards in 2-col grid (hidden below md) ── */}
+                <div className="hidden md:grid w-full gap-6 md:grid-cols-2">
+                    <SimulatorResultPanel
                         dict={dict}
                         recipeName={recipeName}
                         stateLabel={stateLabel}
