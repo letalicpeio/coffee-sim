@@ -307,7 +307,7 @@ export default function SimulatorPage({
         if (t !== null) {
             const n = Number(t);
             if (!Number.isNaN(n)) {
-                updates.temperature = Math.max(88, Math.min(98, n));
+                updates.temperature = Math.max(80, Math.min(96, n));
                 // Para espresso, temperatura en URL implica modo avanzado
                 if (loadedMethod !== "v60" && loadedMethod !== "aeropress") {
                     updates.advancedMode = true;
@@ -666,7 +666,7 @@ export default function SimulatorPage({
             />
 
             <section id="simulador" className="mx-auto w-full max-w-screen-2xl px-4 pb-20 lg:px-6">
-                <div className="grid w-full gap-6 lg:grid-cols-2">
+                <div className="grid w-full gap-0 lg:gap-6 lg:grid-cols-2">
                     <SimulatorResultPanel
 
                         dict={dict}

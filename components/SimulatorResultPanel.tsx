@@ -90,7 +90,7 @@ export default function SimulatorResultPanel({
     method,
 }: Props) {
     return (
-        <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6">
+        <div className="rounded-2xl rounded-b-none border border-neutral-800 bg-neutral-900/40 p-4 pb-2 lg:rounded-b-2xl lg:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <h2 className="text-lg font-semibold">

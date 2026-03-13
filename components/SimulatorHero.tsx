@@ -48,8 +48,9 @@ export default function SimulatorHero({
                         <>
                             <span className="block">{dict.title}</span>
                             <span className="block text-neutral-300">{dict.title2}</span>
-                            <span className="block text-neutral-300">{dict.title3}</span>
+                            
                         </>
+                        // <span className="block text-neutral-300">{dict.title3}</span>
                     )}
                 </h1>
 

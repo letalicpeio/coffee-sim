@@ -98,7 +98,7 @@ export default function SimulatorControlsPanel({
     setColdBrewFridgeTempC,
 }: Props) {
     return (
-        <div className="rounded-2xl border border-neutral-600 bg-neutral-900/40 px-4 py-3 lg:p-6">
+        <div className="rounded-2xl rounded-t-none border border-t-0 border-neutral-800 bg-neutral-900/40 px-4 py-3 lg:rounded-t-2xl lg:border-t lg:border-neutral-600 lg:p-6">
             {/* Cabecera */}
             <div className="flex items-center gap-3">
                 <h2 className="text-lg font-semibold">{dict.controls}</h2>
