@@ -101,27 +101,39 @@ export default function SimulatorControlsPanel({
     slim,
 }: Props) {
     const outerCls = slim
-        ? "border-t border-neutral-800 px-4 py-3"
+        ? "px-4 pb-4"
         : "rounded-2xl border border-neutral-600 bg-neutral-900/40 px-4 py-3 lg:p-6";
     return (
         <div className={outerCls}>
-            {/* Cabecera */}
-            <div className="flex items-center gap-3">
-                <h2 className="text-lg font-semibold">{dict.controls}</h2>
-                <button
-                    type="button"
-                    onClick={() => setAdvancedMode(!advancedMode)}
-                    className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
-                >
-                    {advancedMode ? dict.advancedHide : dict.advancedShow}
-                </button>
-            </div>
+            {/* Cabecera — solo desktop */}
+            {!slim && (
+                <>
+                    <div className="flex items-center gap-3">
+                        <h2 className="text-lg font-semibold">{dict.controls}</h2>
+                        <button
+                            type="button"
+                            onClick={() => setAdvancedMode(!advancedMode)}
+                            className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
+                        >
+                            {advancedMode ? dict.advancedHide : dict.advancedShow}
+                        </button>
+                    </div>
+                    <p className="hidden lg:block mt-1 text-sm text-neutral-400">
+                        {dict.controlsDescription}
+                    </p>
+                </>
+            )}
 
-            <p className="hidden lg:block mt-1 text-sm text-neutral-400">
-                {dict.controlsDescription}
-            </p>
-
-            <div className="mt-4 space-y-4 lg:mt-6 lg:space-y-5">
+            {/* Contenido: flex-row con etiqueta vertical en móvil, columna en desktop */}
+            <div className={slim ? "flex gap-3 pt-3" : "mt-4"}>
+                {slim && (
+                    <div className="flex items-start pt-1">
+                        <span className="select-none text-[10px] font-semibold uppercase tracking-[0.15em] text-neutral-500 [writing-mode:vertical-rl] rotate-180">
+                            {dict.controls}
+                        </span>
+                    </div>
+                )}
+                <div className={slim ? "flex-1 space-y-4" : "space-y-4 lg:space-y-5"}>
                 {/* Controles específicos del método */}
                 {method === "espresso" && (
                     <EspressoControls
@@ -312,7 +324,8 @@ export default function SimulatorControlsPanel({
                     <p className="mt-3 text-xs text-neutral-500">{dict.roastAdvice}</p>
                 </div>
 
-            </div>
+                </div>{/* cierra flex-1 / space-y contenido */}
+            </div>{/* cierra flex wrapper */}
         </div>
     );
 }

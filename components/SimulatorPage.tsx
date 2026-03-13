@@ -270,6 +270,27 @@ export default function SimulatorPage({
         if (recipes.length > 0) dispatch({ type: "SET_SAVED_RECIPES", recipes });
     }, []);
 
+    // ── Modo avanzado por defecto en móvil ───────────────────────────────────
+    // Solo se aplica si la URL no restaura ya un estado avanzado explícito.
+    // El efecto de carga de URL nunca pone advancedMode=false, así que si ya
+    // lo activó por sus propios params, este dispatch es inocuo (idempotente).
+    // Si la URL SÍ contenía params avanzados, el efecto de URL ya habrá
+    // disparado SET_ADVANCED_MODE=true antes que este (ambos tienen [] deps
+    // y se declaran en orden; en React 18 se procesan en el mismo ciclo).
+    useEffect(() => {
+        if (typeof window !== "undefined" && window.innerWidth < 768) {
+            const params = new URLSearchParams(window.location.search);
+            // Si la URL ya tiene params que implican advancedMode (pressure, waterGH,
+            // waterKH), el efecto de URL lo habrá activado — no hace falta sobreescribir.
+            // En cualquier otro caso, activamos el modo avanzado como defecto móvil.
+            const hasExplicitAdvanced =
+                params.has("pressure") || params.has("waterGH") || params.has("waterKH");
+            if (!hasExplicitAdvanced) {
+                dispatch({ type: "SET_ADVANCED_MODE", value: true });
+            }
+        }
+    }, []);
+
     // ── Carga desde URL ──────────────────────────────────────────────────────
     useEffect(() => {
         const updates: Partial<State> = {};
@@ -668,6 +689,17 @@ export default function SimulatorPage({
             <section id="simulador" className="mx-auto w-full max-w-screen-2xl px-4 pb-20 lg:px-6">
                 {/* ── Mobile layout: single merged card (hidden at md+) ─────────── */}
                 <div className="md:hidden flex flex-col gap-6">
+                    {/* Botón modo avanzado — debajo del selector de método */}
+                    <div>
+                        <button
+                            type="button"
+                            onClick={() => dispatch({ type: "SET_ADVANCED_MODE", value: !advancedMode })}
+                            className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
+                        >
+                            {advancedMode ? dict.advancedHide : dict.advancedShow}
+                        </button>
+                    </div>
+
                     <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 overflow-hidden">
                         <SimulatorResultPanel
                             slim
