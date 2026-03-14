@@ -93,7 +93,7 @@ export default function SimulatorResultPanel({
     slim,
 }: Props) {
     const outerCls = slim
-        ? "p-4"
+        ? "px-4 pt-4"
         : "rounded-2xl border border-neutral-800 bg-neutral-900/40 p-6";
     return (
         <div className={outerCls}>
@@ -139,7 +139,7 @@ export default function SimulatorResultPanel({
                 </div>
             ) : null}
 
-            <div className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6">
+            <div className={slim ? "mt-4" : "mt-6 rounded-2xl border border-neutral-800 bg-neutral-950/40 p-6"}>
                 <div className="flex items-start justify-between gap-0 lg:gap-4">
                     <div className="min-w-0">
                         <p className="text-sm text-neutral-300">{dict.flavorProfile}</p>

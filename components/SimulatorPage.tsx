@@ -278,7 +278,7 @@ export default function SimulatorPage({
     // disparado SET_ADVANCED_MODE=true antes que este (ambos tienen [] deps
     // y se declaran en orden; en React 18 se procesan en el mismo ciclo).
     useEffect(() => {
-        if (typeof window !== "undefined" && window.innerWidth < 768) {
+        if (typeof window !== "undefined" && window.innerWidth < 1024) {
             const params = new URLSearchParams(window.location.search);
             // Si la URL ya tiene params que implican advancedMode (pressure, waterGH,
             // waterKH), el efecto de URL lo habrá activado — no hace falta sobreescribir.
@@ -686,9 +686,20 @@ export default function SimulatorPage({
                 saveMessage={saveMessage}
             />
 
+            {/* Advanced mode toggle — mobile/tablet only, below method selector */}
+            <div className="lg:hidden mx-auto w-full max-w-screen-2xl px-6 pb-4">
+                <button
+                    type="button"
+                    onClick={() => dispatch({ type: "SET_ADVANCED_MODE", value: !advancedMode })}
+                    className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
+                >
+                    {advancedMode ? dict.advancedHide : dict.advancedShow}
+                </button>
+            </div>
+
             <section id="simulador" className="mx-auto w-full max-w-screen-2xl px-4 pb-20 lg:px-6">
-                {/* ── Mobile layout: single merged card (hidden at md+) ─────────── */}
-                <div className="md:hidden flex flex-col gap-6">
+                {/* ── Mobile layout: single merged card (hidden at lg+) ─────────── */}
+                <div className="lg:hidden flex flex-col gap-6">
                     <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 overflow-hidden">
                         <SimulatorResultPanel
                             slim
@@ -782,8 +793,8 @@ export default function SimulatorPage({
                     />
                 </div>
 
-                {/* ── Desktop layout: separate cards in 2-col grid (hidden below md) ── */}
-                <div className="hidden md:grid w-full gap-6 md:grid-cols-2">
+                {/* ── Desktop layout: separate cards in 2-col grid (hidden below lg) ── */}
+                <div className="hidden lg:grid w-full gap-6 lg:grid-cols-2">
                     <SimulatorResultPanel
                         dict={dict}
                         recipeName={recipeName}

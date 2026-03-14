@@ -324,18 +324,7 @@ export default function SimulatorControlsPanel({
                     <p className="mt-3 text-xs text-neutral-500">{dict.roastAdvice}</p>
                 </div>
 
-                {/* Botón avanzado — solo móvil (slim), debajo de tipo de café */}
-                {slim && (
-                    <button
-                        type="button"
-                        onClick={() => setAdvancedMode(!advancedMode)}
-                        className="rounded-lg border border-neutral-800 bg-neutral-950/40 px-3 py-1 text-xs text-neutral-200 hover:bg-neutral-900"
-                    >
-                        {advancedMode ? dict.advancedHide : dict.advancedShow}
-                    </button>
-                )}
-
-                </div>{/* cierra flex-1 / space-y contenido */}
+</div>{/* cierra flex-1 / space-y contenido */}
             </div>{/* cierra flex wrapper */}
         </div>
     );
